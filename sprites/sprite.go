@@ -14,6 +14,8 @@ const (
 	TypeEnemyJet
 	TypeFuelDepot
 	TypeBridge
+	TypeSAMSite
+	TypeMissile
 	TypeBullet
 	TypeParticle
 	TypeDecoration

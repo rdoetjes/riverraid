@@ -15,6 +15,7 @@ Featuring procedural river generation, dynamic embankments and islands, 21st-cen
   - **Stealth Destroyers / Ships:** Modern warship hulls with rotating radar masts, gun turrets, and water wake foam trails.
   - **Interceptor Jets:** High-speed delta-wing enemy jets streaking across the airspace.
   - **Offshore Fuel Depots:** Floating fuel platforms with storage tanks, safety hazard stripes, illuminated "FUEL" signage, and beacon lights.
+  - **SAM Missile Sites:** Shore-based radar-guided missile batteries (encountered from Zone 05 onwards) that detect the player and launch persistent heat-seeking missiles.
   - **River Bridges:** Multi-lane truss bridges spanning the river with road markings, crossing military vehicles, and multi-stage collapse animations when destroyed.
   - **Particle FX:** Explosive fire bursts, shockwaves, smoke plumes, water splash rings, and flying metal debris.
 - **Tactical Flight HUD:** Futuristic cockpit instruments including dynamic fuel gauge with low-fuel alarms, digital score readout, reserve lives, sector indicators, and tactical popups.

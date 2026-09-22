@@ -43,6 +43,7 @@ type Game struct {
 	World            *ProceduralWorld
 	Player           *sprites.PlayerJet
 	Bullets          []*sprites.Bullet
+	Missiles         []*sprites.Missile
 	Particles        *sprites.ParticleSystem
 	Audio            *audio.SoundManager
 	HUD              *ui.HUD
@@ -71,6 +72,7 @@ func NewGame(width, height int32) *Game {
 		World:            NewProceduralWorld(w, h, seed),
 		Player:           sprites.NewPlayerJet(rl.Vector2{X: w / 2, Y: h * 0.75}),
 		Bullets:          make([]*sprites.Bullet, 0, 64),
+		Missiles:         make([]*sprites.Missile, 0, 16),
 		Particles:        sprites.NewParticleSystem(),
 		Audio:            audio.NewSoundManager(),
 		HUD:              ui.NewHUD(w, h),
@@ -97,6 +99,7 @@ func (g *Game) StartNewGame() {
 	startY := g.ScreenHeight * 0.75
 	g.Player = sprites.NewPlayerJet(rl.Vector2{X: startX, Y: startY})
 	g.Bullets = g.Bullets[:0]
+	g.Missiles = g.Missiles[:0]
 	g.Particles.Clear()
 
 	g.ScoreForNextLife = 10000

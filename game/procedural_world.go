@@ -182,6 +182,10 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoRock
 			} else if roll < 0.96 {
 				decoType = sprites.DecoRadarStation
+			} else if roll < 0.99 && pw.CurrentSection >= 5 {
+				// SAM Site spawn on left bank - only after Level 5
+				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
+				return // Don't add decoration if we added an enemy
 			} else {
 				decoType = sprites.DecoBunker
 			}
@@ -203,8 +207,14 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoDeciduousTree
 			} else if roll < 0.90 {
 				decoType = sprites.DecoRock
-			} else {
+			} else if roll < 0.95 {
 				decoType = sprites.DecoRadarStation
+			} else if roll < 0.98 && pw.CurrentSection >= 5 {
+				// SAM Site spawn on right bank - only after Level 5
+				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
+				return // Don't add decoration if we added an enemy
+			} else {
+				decoType = sprites.DecoBunker
 			}
 			scale := 0.85 + rng.Float32()*0.4
 			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))

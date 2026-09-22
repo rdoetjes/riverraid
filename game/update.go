@@ -97,7 +97,7 @@ func (g *Game) Update(dt float32) {
 	// Update active enemies with dynamic riverbank & island boundary detection
 	g.updateEnemies(dt)
 
-	// 4. Update Bullets
+	// 4. Update Bullets & Missiles
 	aliveBullets := 0
 	for i := 0; i < len(g.Bullets); i++ {
 		b := g.Bullets[i]
@@ -116,6 +116,8 @@ func (g *Game) Update(dt float32) {
 		aliveBullets++
 	}
 	g.Bullets = g.Bullets[:aliveBullets]
+
+	g.updateMissiles(dt)
 
 	// 5. Update Particle FX
 	g.Particles.Update(dt)
@@ -151,10 +153,45 @@ func (g *Game) updateEnemies(dt float32) {
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
 		case *sprites.Helicopter:
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
+		case *sprites.SAMSite:
+			e.Update(dt)
+			// SAM Site Firing Logic
+			if e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
+				dist := rl.Vector2Distance(e.Position, g.Player.Position)
+				if dist < e.DetectionRange {
+					// Fire a missile
+					missile := sprites.NewMissile(e.Position, g.Player)
+					g.Missiles = append(g.Missiles, missile)
+					e.FireCooldown = 4.0           // 4 seconds between shots
+					g.Audio.Play(audio.SoundShoot) // Reuse shoot sound for now
+				}
+			}
 		default:
 			enemy.Update(dt)
 		}
 	}
+}
+
+// updateMissiles handles homing and lifetime for SAM missiles.
+func (g *Game) updateMissiles(dt float32) {
+	aliveMissiles := 0
+	for i := 0; i < len(g.Missiles); i++ {
+		m := g.Missiles[i]
+		if !m.IsActive() {
+			continue
+		}
+		m.Update(dt)
+
+		// Cull if too far off screen
+		if m.Position.Y < g.CameraY-200 || m.Position.Y > g.CameraY+g.ScreenHeight+200 {
+			m.SetActive(false)
+			continue
+		}
+
+		g.Missiles[aliveMissiles] = m
+		aliveMissiles++
+	}
+	g.Missiles = g.Missiles[:aliveMissiles]
 }
 
 // checkCollisions handles bullet impacts, refueling, enemy collisions, and terrain crash tests.
@@ -194,11 +231,31 @@ func (g *Game) checkCollisions(dt float32) {
 					pts = e.ScoreValue
 				case *sprites.FuelDepot:
 					pts = e.ScoreValue
+				case *sprites.SAMSite:
+					pts = e.ScoreValue
 				}
 
 				g.Player.Score += pts
 				g.Audio.Play(audio.SoundExplosion)
 				g.Particles.AddExplosion(enemy.GetPosition(), false)
+				break
+			}
+		}
+
+		if !bullet.IsActive() {
+			continue
+		}
+
+		// Bullet vs Missiles
+		for _, missile := range g.Missiles {
+			if !missile.IsActive() {
+				continue
+			}
+			if rl.CheckCollisionRecs(bulletBounds, missile.GetBounds()) {
+				bullet.SetActive(false)
+				missile.SetActive(false)
+				g.Audio.Play(audio.SoundExplosion)
+				g.Particles.AddExplosion(missile.GetPosition(), false)
 				break
 			}
 		}
@@ -282,6 +339,19 @@ func (g *Game) checkCollisions(dt float32) {
 			enemy.SetActive(false)
 			g.Particles.AddExplosion(enemy.GetPosition(), false)
 			g.triggerPlayerDeath("MIDAIR COLLISION WITH ENEMY UNIT")
+			return
+		}
+	}
+
+	// --- C2. Player vs Missiles (Crash) ---
+	for _, missile := range g.Missiles {
+		if !missile.IsActive() {
+			continue
+		}
+		if rl.CheckCollisionRecs(playerHitbox, missile.GetBounds()) {
+			missile.SetActive(false)
+			g.Particles.AddExplosion(missile.GetPosition(), false)
+			g.triggerPlayerDeath("STRUCK BY HEAT-SEEKING MISSILE")
 			return
 		}
 	}

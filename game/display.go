@@ -39,8 +39,9 @@ func (g *Game) Draw() {
 	// 5. Render Player Jet
 	g.drawPlayer(shakeX, shakeY)
 
-	// 6. Render Bullets
+	// 6. Render Bullets & Missiles
 	g.drawBullets(shakeX, shakeY)
+	g.drawMissiles(shakeX, shakeY)
 
 	// 7. Render Particle FX
 	g.drawParticles(shakeX, shakeY)
@@ -285,6 +286,24 @@ func (g *Game) drawBullets(sx, sy float32) {
 		b.Position.Y = screenY
 		b.Draw()
 		b.Position = origPos
+	}
+}
+
+// drawMissiles renders SAM missiles.
+func (g *Game) drawMissiles(sx, sy float32) {
+	for _, m := range g.Missiles {
+		if !m.IsActive() {
+			continue
+		}
+		origPos := m.Position
+		screenY := origPos.Y - g.CameraY + sy
+		if screenY < -50 || screenY > g.ScreenHeight+50 {
+			continue
+		}
+		m.Position.X = origPos.X + sx
+		m.Position.Y = screenY
+		m.Draw()
+		m.Position = origPos
 	}
 }
 
