@@ -28,8 +28,8 @@ func NewDestroyer(pos rl.Vector2, minX, maxX float32, speed float32) *Destroyer 
 	return &Destroyer{
 		BaseSprite: BaseSprite{
 			Position:  pos,
-			Velocity:  rl.Vector2{X: speed * dir, Y: 0},
-			Size:      rl.Vector2{X: 54, Y: 26},
+			Velocity:  rl.Vector2{X: 0, Y: speed}, // Initial vertical speed
+			Size:      rl.Vector2{X: 26, Y: 54},   // Swapped: Width 26, Height 54
 			Active:    true,
 			Health:    1,
 			MaxHealth: 1,
@@ -130,49 +130,73 @@ func (d *Destroyer) Draw() {
 	}
 
 	center := d.Position
-	dir := d.Direction
 	halfW := d.Size.X / 2
 	halfH := d.Size.Y / 2
 
-	// 1. Water Wake
-	sternX := center.X - dir*halfW
+	// Since the destroyer sails "down" (towards positive Y), the bow (nose) should point down.
+
+	// 1. Water Wake / Bow Wave
+	// We'll create a V-shaped wake at the bow (bottom) pointing down, and a smaller foam trail at the stern (top).
+	wakeColor := rl.Color{R: 210, G: 240, B: 255, A: 100}
+
+	// Bow Wave (V-shape at the front pointing down)
+	bowY := center.Y + halfH
 	rl.DrawTriangle(
-		rl.Vector2{X: sternX, Y: center.Y - 5},
-		rl.Vector2{X: sternX, Y: center.Y + 5},
-		rl.Vector2{X: sternX - dir*30, Y: center.Y},
-		rl.Color{R: 200, G: 235, B: 255, A: 80},
+		rl.Vector2{X: center.X - 12, Y: bowY - 5},
+		rl.Vector2{X: center.X + 12, Y: bowY - 5},
+		rl.Vector2{X: center.X, Y: bowY + 12}, // Pointing down, less tall
+		rl.Color{R: 220, G: 245, B: 255, A: 60},
 	)
 
-	// 2. Hull (Dark Charcoal Neutral Grey - "Threatening")
-	hullCol := rl.Color{R: 70, G: 72, B: 75, A: 255}
-	trimCol := rl.Color{R: 35, G: 36, B: 38, A: 255}
+	// Stern Wake (Small foam trail at the back pointing up)
+	sternY := center.Y - halfH
+	rl.DrawTriangle(
+		rl.Vector2{X: center.X - 6, Y: sternY},
+		rl.Vector2{X: center.X + 6, Y: sternY},
+		rl.Vector2{X: center.X, Y: sternY - 10}, // Short trail
+		wakeColor,
+	)
 
+	// 2. Hull (Pointed down towards the bottom of the screen - Naval Grey - FIXED CONSTANT)
+	// Vertical Hull Polygon (Sharp Bow Pointing Down, Tapered Stern)
 	hullPts := []rl.Vector2{
-		{X: center.X + dir*halfW, Y: center.Y},
-		{X: center.X + dir*(halfW-10), Y: center.Y - halfH},
-		{X: center.X - dir*(halfW-5), Y: center.Y - halfH},
-		{X: center.X - dir*halfW, Y: center.Y - (halfH - 4)},
-		{X: center.X - dir*halfW, Y: center.Y + (halfH - 4)},
-		{X: center.X - dir*(halfW-5), Y: center.Y + halfH},
-		{X: center.X + dir*(halfW-10), Y: center.Y + halfH},
+		{X: center.X, Y: center.Y + halfH},                 // Sharp Bow Point (Bottom)
+		{X: center.X - halfW*0.6, Y: center.Y + halfH - 8}, // Bow curve left
+		{X: center.X - halfW, Y: center.Y + halfH*0.2},     // Midship Left
+		{X: center.X - halfW, Y: center.Y - halfH*0.6},     // Stern start left
+		{X: center.X - halfW*0.4, Y: center.Y - halfH},     // Stern end left
+		{X: center.X + halfW*0.4, Y: center.Y - halfH},     // Stern end right
+		{X: center.X + halfW, Y: center.Y - halfH*0.6},     // Stern start right
+		{X: center.X + halfW, Y: center.Y + halfH*0.2},     // Midship Right
+		{X: center.X + halfW*0.6, Y: center.Y + halfH - 8}, // Bow curve right
 	}
-	ui.DrawConvexPolygonFilled(hullPts, hullCol)
-	ui.DrawThickPolygonOutline(hullPts, 1.5, trimCol)
+	ui.DrawConvexPolygonFilled(hullPts, rl.Color{R: 110, G: 115, B: 120, A: 255})
+	ui.DrawThickPolygonOutline(hullPts, 1.5, rl.Color{R: 50, G: 52, B: 55, A: 255})
 
-	// Twin Railgun Turrets
-	ui.DrawGlowCircle(rl.Vector2{X: center.X + dir*14, Y: center.Y}, 5.0, rl.Color{R: 40, G: 45, B: 50, A: 200}, 2)
-	rl.DrawCircleV(rl.Vector2{X: center.X + dir*14, Y: center.Y}, 3.5, trimCol)
-	rl.DrawCircleV(rl.Vector2{X: center.X - dir*10, Y: center.Y}, 3.5, trimCol)
+	// Deck Detail (Central strip)
+	rl.DrawRectangleRec(rl.Rectangle{X: center.X - 3, Y: center.Y - halfH + 8, Width: 6, Height: halfH * 1.5}, rl.Color{R: 80, G: 85, B: 90, A: 255})
 
-	// Command Bridge
-	rl.DrawRectangle(int32(center.X-6), int32(center.Y-6), 12, 12, rl.Color{R: 45, G: 50, B: 60, A: 255})
-	rl.DrawRectangleLines(int32(center.X-6), int32(center.Y-6), 12, 12, trimCol)
+	// Twin Railgun Turrets (Aligned vertically along the deck)
+	// Forward turret (near bow/bottom)
+	rl.DrawCircleV(rl.Vector2{X: center.X, Y: center.Y + 12}, 4.0, rl.Color{R: 50, G: 52, B: 55, A: 255})
+	gunPos1 := rl.Vector2{X: center.X, Y: center.Y + 12}
+	rl.DrawLineEx(gunPos1, rl.Vector2{X: center.X, Y: gunPos1.Y + 6}, 2.0, rl.Color{R: 50, G: 52, B: 55, A: 255})
 
-	// Radar
-	radarX := center.X - dir*2
+	// Aft turret (near stern/top)
+	rl.DrawCircleV(rl.Vector2{X: center.X, Y: center.Y - 14}, 4.0, rl.Color{R: 50, G: 52, B: 55, A: 255})
+	gunPos2 := rl.Vector2{X: center.X, Y: center.Y - 14}
+	rl.DrawLineEx(gunPos2, rl.Vector2{X: center.X, Y: gunPos2.Y - 6}, 2.0, rl.Color{R: 50, G: 52, B: 55, A: 255})
+
+	// Command Bridge (Central island)
+	bridgeRec := rl.Rectangle{X: center.X - 6, Y: center.Y - 2, Width: 12, Height: 10}
+	rl.DrawRectangleRec(bridgeRec, rl.Color{R: 45, G: 50, B: 60, A: 255})
+	rl.DrawRectangleLinesEx(bridgeRec, 1.0, rl.Color{R: 50, G: 52, B: 55, A: 255})
+
+	// Radar (On top of bridge)
+	radarY := center.Y + 2
 	rl.DrawLineEx(
-		rl.Vector2{X: radarX - float32(math.Cos(float64(d.RadarAngle)))*6, Y: center.Y - float32(math.Sin(float64(d.RadarAngle)))*6},
-		rl.Vector2{X: radarX + float32(math.Cos(float64(d.RadarAngle)))*6, Y: center.Y + float32(math.Sin(float64(d.RadarAngle)))*6},
+		rl.Vector2{X: center.X - float32(math.Cos(float64(d.RadarAngle)))*6, Y: radarY - float32(math.Sin(float64(d.RadarAngle)))*6},
+		rl.Vector2{X: center.X + float32(math.Cos(float64(d.RadarAngle)))*6, Y: radarY + float32(math.Sin(float64(d.RadarAngle)))*6},
 		2.0,
 		rl.Color{R: 255, G: 200, B: 50, A: 240},
 	)

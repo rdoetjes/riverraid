@@ -185,26 +185,9 @@ func (p *PlayerJet) Draw() {
 		rl.Color{R: 120, G: 240, B: 255, A: 255},
 	)
 
-	// 3. Main Jet Airframe (21st Century Stealth Fighter: F-22 raptor style)
-	// Body Color shades for 3D lighting
-	mainBodyCol := rl.Color{R: 195, G: 205, B: 220, A: 255}
-	leftWingCol := rl.Color{R: 165, G: 175, B: 195, A: 255}
-	rightWingCol := rl.Color{R: 215, G: 225, B: 235, A: 255}
-	fuselageCol := rl.Color{R: 145, G: 155, B: 175, A: 255}
-	borderCol := rl.Color{R: 50, G: 65, B: 85, A: 255}
-
-	// Adjust lighting based on bank
-	if bank > 0 {
-		// Rolling right: left side shaded, right side bright
-		leftWingCol.R -= uint8(bank * 35)
-		leftWingCol.G -= uint8(bank * 35)
-		leftWingCol.B -= uint8(bank * 35)
-	} else if bank < 0 {
-		bMag := -bank
-		rightWingCol.R -= uint8(bMag * 35)
-		rightWingCol.G -= uint8(bMag * 35)
-		rightWingCol.B -= uint8(bMag * 35)
-	}
+	// 3. Main Jet Airframe (21st Century Stealth Fighter: F-22 raptor style - ABSOLUTELY CONSTANT BLUE)
+	blueCol := rl.Color{R: 0, G: 120, B: 210, A: 255}
+	borderCol := rl.Color{R: 5, G: 30, B: 60, A: 255}
 
 	nosePt := rl.Vector2{X: center.X, Y: center.Y - 24}
 	leftWingTip := rl.Vector2{X: center.X - 18.0*widthFactor - bank*4.0, Y: center.Y + 8}
@@ -213,23 +196,21 @@ func (p *PlayerJet) Draw() {
 	rightTailWing := rl.Vector2{X: center.X + 12.0*widthFactor, Y: center.Y + 19}
 	tailCenter := rl.Vector2{X: center.X, Y: center.Y + 17}
 
-	// Left wing polygon
-	ui.DrawConvexPolygonFilled([]rl.Vector2{nosePt, leftWingTip, leftTailWing, tailCenter}, leftWingCol)
-	// Right wing polygon
-	ui.DrawConvexPolygonFilled([]rl.Vector2{nosePt, rightWingTip, rightTailWing, tailCenter}, rightWingCol)
-
-	// Central stealth spine / fuselage
-	spineLeft := rl.Vector2{X: center.X - 4.5*widthFactor, Y: center.Y + 18}
-	spineRight := rl.Vector2{X: center.X + 4.5*widthFactor, Y: center.Y + 18}
-	ui.DrawConvexPolygonFilled([]rl.Vector2{nosePt, spineRight, spineLeft}, mainBodyCol)
+	// Airframe (One solid blue color for all segments - ABSOLUTELY NO SHADING)
+	const (
+		cBlueR = 0
+		cBlueG = 120
+		cBlueB = 210
+	)
+	ui.DrawConvexPolygonFilled([]rl.Vector2{nosePt, leftWingTip, leftTailWing, tailCenter, rightTailWing, rightWingTip}, rl.Color{R: cBlueR, G: cBlueG, B: cBlueB, A: 255})
 
 	// Twin vertical stabilizers (rudders)
 	rudderL1 := rl.Vector2{X: center.X - 7.0*widthFactor, Y: center.Y + 10}
 	rudderL2 := rl.Vector2{X: center.X - 9.0*widthFactor, Y: center.Y + 21}
 	rudderR1 := rl.Vector2{X: center.X + 7.0*widthFactor, Y: center.Y + 10}
 	rudderR2 := rl.Vector2{X: center.X + 9.0*widthFactor, Y: center.Y + 21}
-	rl.DrawLineEx(rudderL1, rudderL2, 2.5, fuselageCol)
-	rl.DrawLineEx(rudderR1, rudderR2, 2.5, fuselageCol)
+	rl.DrawLineEx(rudderL1, rudderL2, 2.5, blueCol)
+	rl.DrawLineEx(rudderR1, rudderR2, 2.5, blueCol)
 
 	// Cockpit glass canopy (glowing tinted vector bubble)
 	cockpitTop := rl.Vector2{X: center.X, Y: center.Y - 14}
@@ -247,7 +228,7 @@ func (p *PlayerJet) Draw() {
 	)
 
 	// Stealth airframe panel outlines
-	ui.DrawThickPolygonOutline([]rl.Vector2{nosePt, rightWingTip, rightTailWing, spineRight, leftNozzle, tailCenter, rightNozzle, spineLeft, leftTailWing, leftWingTip}, 1.2, borderCol)
+	ui.DrawThickPolygonOutline([]rl.Vector2{nosePt, rightWingTip, rightTailWing, tailCenter, leftTailWing, leftWingTip}, 1.2, borderCol)
 
 	// Refueling aura glow
 	if p.Refueling {

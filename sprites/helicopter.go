@@ -154,14 +154,10 @@ func (h *Helicopter) Draw() {
 		rl.Color{R: 10, G: 20, B: 30, A: 35},
 	)
 
-	// 2. Fuselage / Body (Military Olive / Dark Gunmetal)
-	bodyColor := rl.Color{R: 70, G: 85, B: 65, A: 255}
-	highlightColor := rl.Color{R: 95, G: 115, B: 85, A: 255}
-	darkColor := rl.Color{R: 45, G: 55, B: 40, A: 255}
-
+	// 2. Fuselage / Body (Military Olive - FIXED CONSTANT)
 	// Tail boom
 	tailEnd := rl.Vector2{X: center.X, Y: center.Y + 16}
-	rl.DrawLineEx(rl.Vector2{X: center.X, Y: center.Y}, tailEnd, 3.5, darkColor)
+	rl.DrawLineEx(rl.Vector2{X: center.X, Y: center.Y}, tailEnd, 3.5, rl.Color{R: 40, G: 50, B: 35, A: 255})
 
 	// Tail rotor
 	tailRotorY := tailEnd.Y
@@ -178,13 +174,12 @@ func (h *Helicopter) Draw() {
 		rl.Vector2{X: center.X - 11, Y: center.Y - 1},
 		rl.Vector2{X: center.X + 11, Y: center.Y - 1},
 		2.5,
-		darkColor,
+		rl.Color{R: 40, G: 50, B: 35, A: 255},
 	)
 	// Rocket pods on wingtips
 	rl.DrawRectangle(int32(center.X-13), int32(center.Y-3), 3, 5, rl.Color{R: 30, G: 35, B: 30, A: 255})
 	rl.DrawRectangle(int32(center.X+10), int32(center.Y-3), 3, 5, rl.Color{R: 30, G: 35, B: 30, A: 255})
 
-	// Main fuselage polygon
 	fuselagePts := []rl.Vector2{
 		{X: center.X, Y: center.Y - 14}, // Nose
 		{X: center.X + 6, Y: center.Y - 8},
@@ -194,8 +189,8 @@ func (h *Helicopter) Draw() {
 		{X: center.X - 6, Y: center.Y + 4},
 		{X: center.X - 6, Y: center.Y - 8},
 	}
-	ui.DrawConvexPolygonFilled(fuselagePts, bodyColor)
-	ui.DrawThickPolygonOutline(fuselagePts, 1.2, darkColor)
+	ui.DrawConvexPolygonFilled(fuselagePts, rl.Color{R: 80, G: 85, B: 90, A: 255})
+	ui.DrawThickPolygonOutline(fuselagePts, 1.2, rl.Color{R: 30, G: 32, B: 35, A: 255})
 
 	// Cockpit glass (amber/gold armored tint)
 	cockpitPts := []rl.Vector2{
@@ -204,7 +199,7 @@ func (h *Helicopter) Draw() {
 		{X: center.X - 3.5, Y: center.Y - 7},
 	}
 	ui.DrawConvexPolygonFilled(cockpitPts, rl.Color{R: 220, G: 160, B: 40, A: 220})
-	rl.DrawLineEx(cockpitPts[0], cockpitPts[2], 1.2, highlightColor)
+	rl.DrawLineEx(cockpitPts[0], cockpitPts[2], 1.2, rl.Color{R: 255, G: 200, B: 100, A: 200})
 
 	// 3. Spinning Main Rotor Blades (4 blades with motion blur disc)
 	rotorRadius := float32(20.0)

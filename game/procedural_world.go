@@ -212,8 +212,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoRock
 			} else if roll < 0.95 {
 				decoType = sprites.DecoRadarStation
-			} else if roll < 0.99 && section >= 4 {
-				// SAM Site spawn on left bank - from Level 4 onwards
+			} else if roll < 0.97 && section >= 4 {
+				// SAM Site spawn on left bank - from Level 4 onwards (~2 per section per bank)
 				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
 				return
 			} else {
@@ -245,8 +245,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoRock
 			} else if roll < 0.95 {
 				decoType = sprites.DecoRadarStation
-			} else if roll < 0.99 && section >= 4 {
-				// SAM Site spawn on right bank - from Level 4 onwards
+			} else if roll < 0.97 && section >= 4 {
+				// SAM Site spawn on right bank - from Level 4 onwards (~2 per section per bank)
 				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
 				return
 			} else {
@@ -318,36 +318,26 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 
 		} else if spawnRoll < 0.70 {
 			// Ship / Destroyer slot
-			if section >= 3 && spawnRoll > 0.45 {
-				// Hunter Destroyer from Level 3 - High probability
-				minX := slice.LeftBankX + 25
-				maxX := slice.RightBankX - 25
-				if slice.HasIsland {
-					if rng.Float64() < 0.5 {
-						minX, maxX = slice.LeftBankX+22, slice.IslandLeftX-22
-					} else {
-						minX, maxX = slice.IslandRightX+22, slice.RightBankX-22
-					}
+			minX := slice.LeftBankX + 25
+			maxX := slice.RightBankX - 25
+			if slice.HasIsland {
+				if rng.Float64() < 0.5 {
+					minX, maxX = slice.LeftBankX+22, slice.IslandLeftX-22
+				} else {
+					minX, maxX = slice.IslandRightX+22, slice.RightBankX-22
 				}
+			}
+
+			// Frequency Control: Targeting ~3 destroyers per 3600-pixel section
+			// 3600 / 110 (spawn window) = ~32 windows. 3 / 32 = ~9% total probability.
+			if section >= 3 && spawnRoll < 0.54 { // 0.54 - 0.45 = 0.09 (9%)
 				if maxX > minX+30 {
 					posX := minX + rng.Float32()*(maxX-minX)
-					// Higher vertical speed to sail down aggressively
 					speed := float32(60.0 + float64(section)*4.0)
 					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 				}
 			} else {
 				// Standard Ship
-				minX := slice.LeftBankX + 25
-				maxX := slice.RightBankX - 25
-				if slice.HasIsland {
-					if rng.Float64() < 0.5 {
-						minX = slice.LeftBankX + 22
-						maxX = slice.IslandLeftX - 22
-					} else {
-						minX = slice.IslandRightX + 22
-						maxX = slice.RightBankX - 22
-					}
-				}
 				if maxX > minX+35 {
 					posX := minX + rng.Float32()*(maxX-minX)
 					speed := float32(25.0 + rng.Float64()*30.0)
@@ -355,43 +345,24 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				}
 			}
 
-		} else if spawnRoll < 0.92 {
-			// Fast Interceptor Jet spawn
-			if section >= 5 && spawnRoll > 0.82 {
-				// Even more destroyers at high levels
-				minX := slice.LeftBankX + 25
-				maxX := slice.RightBankX - 25
-				if maxX > minX+40 {
-					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(65.0 + float64(section)*5.0)
-					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-				}
-			} else {
-				// Fast Interceptor Jet
+		} else if spawnRoll < 0.95 {
+			// Fast Interceptor Jet
+			minX := slice.LeftBankX + 15
+			maxX := slice.RightBankX - 15
+			if maxX > minX+50 {
+				posX := minX + rng.Float32()*(maxX-minX)
+				speed := float32(110.0 + rng.Float64()*60.0 + float64(section)*8.0)
+				pw.Enemies = append(pw.Enemies, sprites.NewEnemyJet(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
+			}
+		} else {
+			// Extra filler slot (Decoration or Jet)
+			if rng.Float64() < 0.5 {
 				minX := slice.LeftBankX + 15
 				maxX := slice.RightBankX - 15
 				if maxX > minX+50 {
 					posX := minX + rng.Float32()*(maxX-minX)
 					speed := float32(110.0 + rng.Float64()*60.0 + float64(section)*8.0)
 					pw.Enemies = append(pw.Enemies, sprites.NewEnemyJet(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-				}
-			}
-		} else {
-			// Extra Destroyer/SAM site spawn chance at the end of the roll
-			if section >= 3 {
-				minX := slice.LeftBankX + 25
-				maxX := slice.RightBankX - 25
-				if slice.HasIsland {
-					if rng.Float64() < 0.5 {
-						minX, maxX = slice.LeftBankX+22, slice.IslandLeftX-22
-					} else {
-						minX, maxX = slice.IslandRightX+22, slice.RightBankX-22
-					}
-				}
-				if maxX > minX+30 {
-					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(50.0 + float64(section)*3.0)
-					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 				}
 			}
 		}

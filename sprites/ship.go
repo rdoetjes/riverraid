@@ -127,46 +127,22 @@ func (s *Ship) Draw() {
 	halfW := s.Size.X / 2
 	halfH := s.Size.Y / 2
 
-	// 1. Water Wake / Hydrodynamic Foam Waves
-	wakeColor := rl.Color{R: 210, G: 240, B: 255, A: 120}
-	wakeLen := float32(24.0)
-
-	// Bow wave
-	bowX := center.X + dir*(halfW-4)
-	rl.DrawLineEx(
-		rl.Vector2{X: bowX, Y: center.Y - halfH},
-		rl.Vector2{X: bowX + dir*6, Y: center.Y},
-		2.0,
-		wakeColor,
-	)
-	rl.DrawLineEx(
-		rl.Vector2{X: bowX, Y: center.Y + halfH},
-		rl.Vector2{X: bowX + dir*6, Y: center.Y},
-		2.0,
-		wakeColor,
-	)
-
-	// Stern wake trails expanding backwards
+	// 1. Water Wake
 	sternX := center.X - dir*halfW
 	rl.DrawTriangle(
-		rl.Vector2{X: sternX, Y: center.Y - 4},
-		rl.Vector2{X: sternX, Y: center.Y + 4},
-		rl.Vector2{X: sternX - dir*wakeLen, Y: center.Y - 9},
-		rl.Color{R: 200, G: 235, B: 255, A: 70},
+		rl.Vector2{X: sternX, Y: center.Y - 2},
+		rl.Vector2{X: sternX, Y: center.Y + 2},
+		rl.Vector2{X: sternX - dir*18, Y: center.Y - 5},
+		rl.Color{R: 210, G: 240, B: 255, A: 60},
 	)
 	rl.DrawTriangle(
-		rl.Vector2{X: sternX, Y: center.Y - 4},
-		rl.Vector2{X: sternX, Y: center.Y + 4},
-		rl.Vector2{X: sternX - dir*wakeLen, Y: center.Y + 9},
-		rl.Color{R: 200, G: 235, B: 255, A: 70},
+		rl.Vector2{X: sternX, Y: center.Y - 2},
+		rl.Vector2{X: sternX, Y: center.Y + 2},
+		rl.Vector2{X: sternX - dir*18, Y: center.Y + 5},
+		rl.Color{R: 210, G: 240, B: 255, A: 60},
 	)
 
-	// 2. Hull (Modern Angular Stealth Destroyer - Neutral Grey)
-	hullColor := rl.Color{R: 105, G: 110, B: 115, A: 255}
-	deckColor := rl.Color{R: 130, G: 135, B: 140, A: 255}
-	superstructureColor := rl.Color{R: 85, G: 90, B: 95, A: 255}
-	darkTrim := rl.Color{R: 50, G: 52, B: 55, A: 255}
-
+	// 2. Hull (Naval Grey - ABSOLUTELY CONSTANT)
 	hullPts := []rl.Vector2{
 		{X: center.X + dir*halfW, Y: center.Y},               // Bow point
 		{X: center.X + dir*(halfW-8), Y: center.Y - halfH},   // Bow top
@@ -177,52 +153,35 @@ func (s *Ship) Draw() {
 		{X: center.X + dir*(halfW-8), Y: center.Y + halfH},   // Bow bottom
 	}
 
-	ui.DrawConvexPolygonFilled(hullPts, hullColor)
-	ui.DrawThickPolygonOutline(hullPts, 1.2, darkTrim)
+	ui.DrawConvexPolygonFilled(hullPts, rl.Color{R: 110, G: 115, B: 120, A: 255})
+	ui.DrawThickPolygonOutline(hullPts, 1.2, rl.Color{R: 30, G: 32, B: 35, A: 255})
 
-	// Deck inlay
-	deckPts := []rl.Vector2{
-		{X: center.X + dir*(halfW-6), Y: center.Y},
-		{X: center.X + dir*(halfW-12), Y: center.Y - (halfH - 2)},
-		{X: center.X - dir*(halfW-6), Y: center.Y - (halfH - 2)},
-		{X: center.X - dir*(halfW-6), Y: center.Y + (halfH - 2)},
-		{X: center.X + dir*(halfW-12), Y: center.Y + (halfH - 2)},
-	}
-	ui.DrawConvexPolygonFilled(deckPts, deckColor)
-
-	// 3. Superstructure (Command Bridge Island & Radar)
+	// 3. Superstructure
 	bridgeRec := rl.Rectangle{
 		X:      center.X - 8,
 		Y:      center.Y - 5,
 		Width:  16,
 		Height: 10,
 	}
-	if dir < 0 {
-		bridgeRec.X = center.X - 8
-	}
-	rl.DrawRectangleRec(bridgeRec, superstructureColor)
-	rl.DrawRectangleLinesEx(bridgeRec, 1.0, darkTrim)
+	rl.DrawRectangleRec(bridgeRec, rl.Color{R: 85, G: 90, B: 95, A: 255})
+	rl.DrawRectangleLinesEx(bridgeRec, 1.0, rl.Color{R: 30, G: 32, B: 35, A: 255})
 
 	// Forward Naval Gun Turret
 	turretPos := rl.Vector2{X: center.X + dir*10, Y: center.Y}
-	rl.DrawCircleV(turretPos, 3.5, darkTrim)
-	gunBarrelEnd := rl.Vector2{X: turretPos.X + dir*6, Y: turretPos.Y}
-	rl.DrawLineEx(turretPos, gunBarrelEnd, 2.0, darkTrim)
+	rl.DrawCircleV(turretPos, 3.5, rl.Color{R: 30, G: 32, B: 35, A: 255})
+	rl.DrawLineEx(turretPos, rl.Vector2{X: turretPos.X + dir*6, Y: turretPos.Y}, 2.0, rl.Color{R: 30, G: 32, B: 35, A: 255})
 
 	// Rotating Radar Mast
 	radarX := center.X - dir*2
-	radarY := center.Y
-	rl.DrawCircle(int32(radarX), int32(radarY), 2.5, rl.Color{R: 200, G: 215, B: 230, A: 255})
-	radarLineLen := float32(4.0)
+	rl.DrawCircle(int32(radarX), int32(center.Y), 2.5, rl.Color{R: 200, G: 215, B: 230, A: 255})
 	rl.DrawLineEx(
-		rl.Vector2{X: radarX - float32(math.Cos(float64(s.RadarAngle)))*radarLineLen, Y: radarY - float32(math.Sin(float64(s.RadarAngle)))*radarLineLen},
-		rl.Vector2{X: radarX + float32(math.Cos(float64(s.RadarAngle)))*radarLineLen, Y: radarY + float32(math.Sin(float64(s.RadarAngle)))*radarLineLen},
+		rl.Vector2{X: radarX - float32(math.Cos(float64(s.RadarAngle)))*4, Y: center.Y - float32(math.Sin(float64(s.RadarAngle)))*4},
+		rl.Vector2{X: radarX + float32(math.Cos(float64(s.RadarAngle)))*4, Y: center.Y + float32(math.Sin(float64(s.RadarAngle)))*4},
 		1.5,
 		rl.Color{R: 255, G: 190, B: 40, A: 240},
 	)
 
 	// Stern Helipad 'H' Marking
 	helipadX := center.X - dir*14
-	helipadY := center.Y
-	rl.DrawCircleLines(int32(helipadX), int32(helipadY), 4.0, rl.Color{R: 255, G: 255, B: 255, A: 180})
+	rl.DrawCircleLines(int32(helipadX), int32(center.Y), 4.0, rl.Color{R: 255, G: 255, B: 255, A: 120})
 }
