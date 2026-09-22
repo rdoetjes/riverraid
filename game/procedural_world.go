@@ -208,11 +208,11 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoHouse
 			} else if roll < 0.82 {
 				decoType = sprites.DecoBuilding
-			} else if roll < 0.90 {
+			} else if roll < 0.92 {
 				decoType = sprites.DecoRock
-			} else if roll < 0.94 {
+			} else if roll < 0.95 {
 				decoType = sprites.DecoRadarStation
-			} else if roll < 0.98 && section >= 4 {
+			} else if roll < 0.99 && section >= 4 {
 				// SAM Site spawn on left bank - from Level 4 onwards
 				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
 				return
@@ -241,11 +241,11 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoHouse
 			} else if roll < 0.82 {
 				decoType = sprites.DecoBuilding
-			} else if roll < 0.90 {
+			} else if roll < 0.92 {
 				decoType = sprites.DecoRock
-			} else if roll < 0.94 {
+			} else if roll < 0.95 {
 				decoType = sprites.DecoRadarStation
-			} else if roll < 0.98 && section >= 4 {
+			} else if roll < 0.99 && section >= 4 {
 				// SAM Site spawn on right bank - from Level 4 onwards
 				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
 				return
@@ -277,12 +277,12 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 		return
 	}
 
-	// Spawn density check
+	// Spawn density check: Higher density (every 110 pixels instead of 160)
 	yInt := int(math.Abs(float64(slice.WorldY)))
-	if yInt%160 < int(SliceStep) {
+	if yInt%110 < int(SliceStep) {
 		spawnRoll := rng.Float64()
 
-		if spawnRoll < 0.26 {
+		if spawnRoll < 0.22 {
 			// Fuel Depot spawn
 			var fuelX float32
 			if slice.HasIsland {
@@ -297,7 +297,7 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 			}
 			pw.Enemies = append(pw.Enemies, sprites.NewFuelDepot(rl.Vector2{X: fuelX, Y: slice.WorldY}))
 
-		} else if spawnRoll < 0.50 {
+		} else if spawnRoll < 0.45 {
 			// Helicopter spawn
 			minX := slice.LeftBankX + 20
 			maxX := slice.RightBankX - 20
@@ -316,10 +316,10 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				pw.Enemies = append(pw.Enemies, sprites.NewHelicopter(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 			}
 
-		} else if spawnRoll < 0.75 {
+		} else if spawnRoll < 0.70 {
 			// Ship / Destroyer slot
-			if section >= 4 && spawnRoll > 0.60 {
-				// Hunter Destroyer from Level 4
+			if section >= 3 && spawnRoll > 0.45 {
+				// Hunter Destroyer from Level 3 - High probability
 				minX := slice.LeftBankX + 25
 				maxX := slice.RightBankX - 25
 				if slice.HasIsland {
@@ -329,9 +329,10 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 						minX, maxX = slice.IslandRightX+22, slice.RightBankX-22
 					}
 				}
-				if maxX > minX+35 {
+				if maxX > minX+30 {
 					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(45.0 + float64(section)*3.0)
+					// Higher vertical speed to sail down aggressively
+					speed := float32(60.0 + float64(section)*4.0)
 					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 				}
 			} else {
@@ -354,15 +355,15 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				}
 			}
 
-		} else if spawnRoll < 0.95 {
-			// Jet / Destroyer slot
-			if section >= 6 && spawnRoll > 0.90 {
+		} else if spawnRoll < 0.92 {
+			// Fast Interceptor Jet spawn
+			if section >= 5 && spawnRoll > 0.82 {
 				// Even more destroyers at high levels
 				minX := slice.LeftBankX + 25
 				maxX := slice.RightBankX - 25
 				if maxX > minX+40 {
 					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(50.0 + float64(section)*4.0)
+					speed := float32(65.0 + float64(section)*5.0)
 					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 				}
 			} else {
@@ -376,8 +377,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				}
 			}
 		} else {
-			// Extra Destroyer spawn chance at the end of the roll from Level 4
-			if section >= 4 {
+			// Extra Destroyer/SAM site spawn chance at the end of the roll
+			if section >= 3 {
 				minX := slice.LeftBankX + 25
 				maxX := slice.RightBankX - 25
 				if slice.HasIsland {
@@ -387,9 +388,9 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 						minX, maxX = slice.IslandRightX+22, slice.RightBankX-22
 					}
 				}
-				if maxX > minX+35 {
+				if maxX > minX+30 {
 					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(45.0 + float64(section)*3.0)
+					speed := float32(50.0 + float64(section)*3.0)
 					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 				}
 			}

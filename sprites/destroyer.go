@@ -58,7 +58,7 @@ func (d *Destroyer) Update(dt float32) {
 	}
 }
 
-// UpdateWithHunterLogic moves the destroyer laterally to hunt the player while avoiding river boundaries.
+// UpdateWithHunterLogic moves the destroyer laterally to hunt the player and vertically to sail down the river.
 func (d *Destroyer) UpdateWithHunterLogic(dt float32, playerPos rl.Vector2, leftBank, rightBank float32, hasIsland bool, islLeft, islRight float32) {
 	if !d.Active {
 		return
@@ -67,24 +67,28 @@ func (d *Destroyer) UpdateWithHunterLogic(dt float32, playerPos rl.Vector2, left
 	d.Age += dt
 	d.RadarAngle += 8.0 * dt
 
-	// Lateral movement speed
-	speed := float32(math.Abs(float64(d.Velocity.X)))
-	if speed < 40.0 {
-		speed = 40.0
-	} // Minimum pursuit speed
+	// 1. Lateral Hunting Logic
+	sideSpeed := float32(math.Abs(float64(d.Velocity.X)))
+	if sideSpeed < 50.0 {
+		sideSpeed = 50.0
+	}
 
-	// Hunt player laterally
 	if playerPos.X < d.Position.X-5 {
-		d.Velocity.X = -speed
+		d.Velocity.X = -sideSpeed
 		d.Direction = -1.0
 	} else if playerPos.X > d.Position.X+5 {
-		d.Velocity.X = speed
+		d.Velocity.X = sideSpeed
 		d.Direction = 1.0
 	}
 
-	// Boundary avoidance logic (copied from Ship but adapted for hunting)
+	// 2. Vertical "Sailing Down" Logic
+	// Sail down relative to the world at a steady pace
+	d.Velocity.Y = 90.0 // Constant speed sailing "down-river" aggressively
+	d.Position.Y += d.Velocity.Y * dt
+
+	// 3. Boundary avoidance (Stay in water)
 	halfW := d.Size.X / 2.0
-	margin := float32(6.0)
+	margin := float32(8.0)
 
 	minX := leftBank + halfW + margin
 	maxX := rightBank - halfW - margin
@@ -92,29 +96,26 @@ func (d *Destroyer) UpdateWithHunterLogic(dt float32, playerPos rl.Vector2, left
 	if hasIsland {
 		islandMid := (islLeft + islRight) / 2.0
 		if d.Position.X < islandMid {
-			// In left channel
 			maxX = islLeft - halfW - margin
 		} else {
-			// In right channel
 			minX = islRight + halfW + margin
 		}
 	}
 
-	// Clamp to navigable water
 	if maxX <= minX {
 		maxX = minX + 2.0
 	}
 
 	d.Position.X += d.Velocity.X * dt
 
-	// Collision reversal at shores
+	// Clamp and Reverse lateral direction at shores
 	if d.Position.X <= minX {
 		d.Position.X = minX
-		d.Velocity.X = speed
+		d.Velocity.X = sideSpeed
 		d.Direction = 1.0
 	} else if d.Position.X >= maxX {
 		d.Position.X = maxX
-		d.Velocity.X = -speed
+		d.Velocity.X = -sideSpeed
 		d.Direction = -1.0
 	}
 

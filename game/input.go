@@ -78,24 +78,34 @@ func (g *Game) handleFlightControls(dt float32) {
 		rl.IsMouseButtonDown(rl.MouseLeftButton) || rl.IsKeyDown(rl.KeyLeftControl)
 
 	if firePressed && g.Player.CanShoot() {
-		// Spawn bullet traveling straight forward (upriver)
-		bulletSpeed := float32(650.0)
-		bulletPos := rl.Vector2{
-			X: g.Player.Position.X,
-			Y: g.Player.Position.Y - 24,
-		}
-		bulletVel := rl.Vector2{
-			X: 0,
-			Y: -bulletSpeed,
+		// Limit player to maximum 3 bullets on screen
+		playerBulletCount := 0
+		for _, b := range g.Bullets {
+			if b.IsPlayerBullet && b.Active {
+				playerBulletCount++
+			}
 		}
 
-		bullet := sprites.NewBullet(bulletPos, bulletVel, true)
-		g.Bullets = append(g.Bullets, bullet)
+		if playerBulletCount < 3 {
+			// Spawn bullet traveling straight forward (upriver)
+			bulletSpeed := float32(650.0)
+			bulletPos := rl.Vector2{
+				X: g.Player.Position.X,
+				Y: g.Player.Position.Y - 24,
+			}
+			bulletVel := rl.Vector2{
+				X: 0,
+				Y: -bulletSpeed,
+			}
 
-		g.Player.RecordShot()
-		g.Audio.Play(audio.SoundShoot)
+			bullet := sprites.NewBullet(bulletPos, bulletVel, true)
+			g.Bullets = append(g.Bullets, bullet)
 
-		// Muzzle flash particle
-		g.Particles.AddContrail(bulletPos, rl.Vector2{X: 0, Y: -50}, false)
+			g.Player.RecordShot()
+			g.Audio.Play(audio.SoundShoot)
+
+			// Muzzle flash particle
+			g.Particles.AddContrail(bulletPos, rl.Vector2{X: 0, Y: -50}, false)
+		}
 	}
 }

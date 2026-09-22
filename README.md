@@ -33,7 +33,7 @@ Featuring procedural river generation, dynamic embankments and islands, 21st-cen
 | `S` / `Down Arrow` | Decelerate / Airbrake (slows flight for precise maneuvering) |
 | `A` / `Left Arrow` | Bank Left |
 | `D` / `Right Arrow` | Bank Right |
-| `Space` / `J` / `Left Click` | Fire Autocannon / Laser |
+| `Space` / `J` / `Left Click` | Fire Autocannon / Laser (Max 3 on-screen) |
 | `P` / `Escape` | Pause / Resume |
 | `M` | Mute / Unmute Audio |
 | `Enter` / `Space` | Launch Sortie / Restart Mission |

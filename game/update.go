@@ -211,7 +211,10 @@ func (g *Game) updateEnemies(dt float32) {
 			// SAM Site Firing Logic
 			if e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
 				dist := rl.Vector2Distance(e.Position, g.Player.Position)
-				if dist < e.DetectionRange {
+				// Horizontal proximity check: Only fire if player is within 25% screen width of the site
+				horizontalDist := math.Abs(float64(e.Position.X - g.Player.Position.X))
+
+				if dist < e.DetectionRange && horizontalDist < float64(g.ScreenWidth*0.25) {
 					// Fire a missile
 					missile := sprites.NewMissile(e.Position, g.Player)
 					g.Missiles = append(g.Missiles, missile)
@@ -265,35 +268,37 @@ func (g *Game) checkCollisions(dt float32) {
 		}
 		bulletBounds := bullet.GetBounds()
 
-		// Bullet vs Enemies
-		for _, enemy := range g.World.Enemies {
-			if !enemy.IsActive() {
-				continue
-			}
-			if rl.CheckCollisionRecs(bulletBounds, enemy.GetBounds()) {
-				bullet.SetActive(false)
-				enemy.SetActive(false)
-
-				pts := 0
-				switch e := enemy.(type) {
-				case *sprites.Helicopter:
-					pts = e.ScoreValue
-				case *sprites.Ship:
-					pts = e.ScoreValue
-				case *sprites.EnemyJet:
-					pts = e.ScoreValue
-				case *sprites.Destroyer:
-					pts = e.ScoreValue
-				case *sprites.FuelDepot:
-					pts = e.ScoreValue
-				case *sprites.SAMSite:
-					pts = e.ScoreValue
+		// Bullet vs Enemies: Only player bullets can destroy enemies
+		if bullet.IsPlayerBullet {
+			for _, enemy := range g.World.Enemies {
+				if !enemy.IsActive() {
+					continue
 				}
+				if rl.CheckCollisionRecs(bulletBounds, enemy.GetBounds()) {
+					bullet.SetActive(false)
+					enemy.SetActive(false)
 
-				g.Player.Score += pts
-				g.Audio.Play(audio.SoundExplosion)
-				g.Particles.AddExplosion(enemy.GetPosition(), false)
-				break
+					pts := 0
+					switch e := enemy.(type) {
+					case *sprites.Helicopter:
+						pts = e.ScoreValue
+					case *sprites.Ship:
+						pts = e.ScoreValue
+					case *sprites.EnemyJet:
+						pts = e.ScoreValue
+					case *sprites.Destroyer:
+						pts = e.ScoreValue
+					case *sprites.FuelDepot:
+						pts = e.ScoreValue
+					case *sprites.SAMSite:
+						pts = e.ScoreValue
+					}
+
+					g.Player.Score += pts
+					g.Audio.Play(audio.SoundExplosion)
+					g.Particles.AddExplosion(enemy.GetPosition(), false)
+					break
+				}
 			}
 		}
 
@@ -346,6 +351,19 @@ func (g *Game) checkCollisions(dt float32) {
 
 				alertMsg := fmt.Sprintf("SECTOR %02d SECURED - +500 PTS", bridge.SectionIndex)
 				g.HUD.SetAlert(alertMsg, 3.0, rl.Color{R: 0, G: 255, B: 200, A: 255})
+				break
+			}
+		}
+
+		if !bullet.IsActive() {
+			continue
+		}
+
+		// Enemy Bullet vs Player
+		if !bullet.IsPlayerBullet && g.Player.Active && g.Player.InvincibleTimer <= 0 {
+			if rl.CheckCollisionRecs(bulletBounds, playerHitbox) {
+				bullet.SetActive(false)
+				g.triggerPlayerDeath("SHOT DOWN BY ENEMY FIRE")
 				break
 			}
 		}

@@ -30,7 +30,7 @@ func NewSAMSite(pos rl.Vector2) *SAMSite {
 		},
 		RadarAngle:     0.0,
 		FireCooldown:   0.0,
-		DetectionRange: 450.0,
+		DetectionRange: 500.0,
 		ScoreValue:     150,
 	}
 }
