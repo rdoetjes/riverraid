@@ -135,14 +135,49 @@ The game automatically synthesizes all sounds in memory. To substitute your own 
 
 ---
 
+## 🛠️ Makefile Recipes & Build Commands
+
+A `Makefile` is included to streamline building, running, testing, formatting, and packaging the project.
+
+| Target | Description | Underlying Command |
+| :--- | :--- | :--- |
+| `make` / `make all` | Build the default game binary. | `go build -ldflags="-s -w" -o riverraid .` |
+| `make build` | Compile the optimized game binary. | `go build -ldflags="-s -w" -o riverraid .` |
+| `make run` | Compile the game and immediately launch it. | `make build && ./riverraid` |
+| `make clean` | Remove compiled executables and `dist/` artifacts. | `rm -f riverraid riverraid.exe && rm -rf dist/` |
+| `make check` | Run both code formatting and static analysis checks. | `make fmt && make vet` |
+| `make test` | Run all unit and integration test suites. | `go test -v ./...` |
+| `make fmt` | Format all Go source files. | `go fmt ./...` |
+| `make vet` | Run static analysis on all Go packages. | `go vet ./...` |
+| `make deps` | Download and verify module dependencies. | `go mod download && go mod verify` |
+| `make tidy` | Tidy dependencies in `go.mod` and `go.sum`. | `go mod tidy` |
+| `make package-mac` | Build a standalone macOS `.app` bundle (`dist/RiverRaid.app`). | Builds binary and bundles `Info.plist` + assets |
+| `make help` | Print a formatted summary of all available make recipes. | Prints target list with descriptions |
+
+---
+
 ## 🚀 Running the Game
 
+### Using Make (Recommended)
+
 ```bash
-go run .
+# Build and run the game directly
+make run
+
+# Run code quality checks
+make check
+
+# Clean build artifacts
+make clean
 ```
 
-To build an executable:
+### Using the Go CLI directly
+
 ```bash
+# Run directly with Go
+go run .
+
+# Build manual executable
 go build -o riverraid .
 ./riverraid
 ```

@@ -86,8 +86,14 @@ func (pw *ProceduralWorld) sampleRiver(worldY float32) RiverSlice {
 		normWidth = -normWidth
 	}
 
-	// Near bridge locations, straighten and widen river cleanly
-	distToBridge := float32(math.Abs(float64(worldY - pw.NextBridgeY)))
+	// Near bridge locations, straighten and widen river cleanly (analytical bridge position)
+	nearestBridgeIdx := math.Round(float64(-worldY) / SectionLength)
+	if nearestBridgeIdx < 1 {
+		nearestBridgeIdx = 1
+	}
+	nearestBridgeY := -float32(nearestBridgeIdx) * SectionLength
+	distToBridge := float32(math.Abs(float64(worldY - nearestBridgeY)))
+
 	bridgeFactor := float32(1.0)
 	if distToBridge < 200.0 {
 		blend := distToBridge / 200.0
@@ -264,7 +270,16 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 			// Ship / Boat spawn
 			minX := slice.LeftBankX + 25
 			maxX := slice.RightBankX - 25
-			if maxX > minX+40 {
+			if slice.HasIsland {
+				if rng.Float64() < 0.5 {
+					minX = slice.LeftBankX + 22
+					maxX = slice.IslandLeftX - 22
+				} else {
+					minX = slice.IslandRightX + 22
+					maxX = slice.RightBankX - 22
+				}
+			}
+			if maxX > minX+35 {
 				posX := minX + rng.Float32()*(maxX-minX)
 				speed := float32(25.0 + rng.Float64()*30.0)
 				pw.Enemies = append(pw.Enemies, sprites.NewShip(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
@@ -335,17 +350,64 @@ func (pw *ProceduralWorld) GetSliceAt(worldY float32) RiverSlice {
 	return pw.sampleRiver(worldY)
 }
 
+// GetRiverBoundsAt linearly interpolates exact river boundaries from active slices to match screen rendering.
+func (pw *ProceduralWorld) GetRiverBoundsAt(worldY float32) (leftBank, rightBank float32, hasIsland bool, islLeft, islRight float32) {
+	slices := pw.ActiveSlices
+	n := len(slices)
+	if n >= 2 {
+		for i := 0; i < n-1; i++ {
+			s0 := slices[i]
+			s1 := slices[i+1]
+			// Slices are ordered from higher Y to lower Y
+			if s0.WorldY >= worldY && worldY >= s1.WorldY {
+				denom := s0.WorldY - s1.WorldY
+				t := float32(0.0)
+				if denom > 0.001 {
+					t = (s0.WorldY - worldY) / denom
+				}
+				leftBank = s0.LeftBankX + t*(s1.LeftBankX-s0.LeftBankX)
+				rightBank = s0.RightBankX + t*(s1.RightBankX-s0.RightBankX)
+
+				// Island linear interpolation matching display.go exactly
+				if s0.HasIsland || s1.HasIsland {
+					il0, ir0 := s0.IslandLeftX, s0.IslandRightX
+					if !s0.HasIsland {
+						il0, ir0 = s0.RiverCenter, s0.RiverCenter
+					}
+					il1, ir1 := s1.IslandLeftX, s1.IslandRightX
+					if !s1.HasIsland {
+						il1, ir1 = s1.RiverCenter, s1.RiverCenter
+					}
+					islLeft = il0 + t*(il1-il0)
+					islRight = ir0 + t*(ir1-ir0)
+					if islRight-islLeft > 2.0 {
+						hasIsland = true
+					}
+				}
+				return leftBank, rightBank, hasIsland, islLeft, islRight
+			}
+		}
+	}
+
+	// Fallback to analytical sampling if coordinates are outside cached active slices
+	s := pw.sampleRiver(worldY)
+	return s.LeftBankX, s.RightBankX, s.HasIsland, s.IslandLeftX, s.IslandRightX
+}
+
 // IsPointInWater checks if (x, y) is inside the navigable river water (and not on land or an island).
 func (pw *ProceduralWorld) IsPointInWater(x, y float32) bool {
-	slice := pw.sampleRiver(y)
+	leftBank, rightBank, hasIsland, islLeft, islRight := pw.GetRiverBoundsAt(y)
+
+	// 2px safety tolerance to prevent frustrating edge clipping
+	tolerance := float32(2.0)
 
 	// Outside main river banks -> Land
-	if x <= slice.LeftBankX || x >= slice.RightBankX {
+	if x <= leftBank+tolerance || x >= rightBank-tolerance {
 		return false
 	}
 
 	// Inside central island -> Land
-	if slice.HasIsland && x >= slice.IslandLeftX && x <= slice.IslandRightX {
+	if hasIsland && x >= islLeft-tolerance && x <= islRight+tolerance {
 		return false
 	}
 

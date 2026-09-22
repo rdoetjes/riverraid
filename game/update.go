@@ -31,9 +31,7 @@ func (g *Game) Update(dt float32) {
 		for _, bridge := range g.World.Bridges {
 			bridge.Update(dt)
 		}
-		for _, enemy := range g.World.Enemies {
-			enemy.Update(dt)
-		}
+		g.updateEnemies(dt)
 		g.Particles.Update(dt)
 
 		g.RespawnTimer -= dt
@@ -96,10 +94,8 @@ func (g *Game) Update(dt float32) {
 		bridge.Update(dt)
 	}
 
-	// Update active enemies
-	for _, enemy := range g.World.Enemies {
-		enemy.Update(dt)
-	}
+	// Update active enemies with dynamic riverbank & island boundary detection
+	g.updateEnemies(dt)
 
 	// 4. Update Bullets
 	aliveBullets := 0
@@ -141,15 +137,35 @@ func (g *Game) Update(dt float32) {
 	}
 }
 
+// updateEnemies updates enemy movement and ensures watercraft/aircraft reverse when hitting riverbanks or islands.
+func (g *Game) updateEnemies(dt float32) {
+	for _, enemy := range g.World.Enemies {
+		if !enemy.IsActive() {
+			continue
+		}
+		pos := enemy.GetPosition()
+		leftBank, rightBank, hasIsland, islLeft, islRight := g.World.GetRiverBoundsAt(pos.Y)
+
+		switch e := enemy.(type) {
+		case *sprites.Ship:
+			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
+		case *sprites.Helicopter:
+			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
+		default:
+			enemy.Update(dt)
+		}
+	}
+}
+
 // checkCollisions handles bullet impacts, refueling, enemy collisions, and terrain crash tests.
 func (g *Game) checkCollisions(dt float32) {
 	playerBounds := g.Player.GetBounds()
 	// Tighter collision box for player fuselage
 	playerHitbox := rl.Rectangle{
-		X:      g.Player.Position.X - 10,
-		Y:      g.Player.Position.Y - 14,
-		Width:  20,
-		Height: 28,
+		X:      g.Player.Position.X - 8,
+		Y:      g.Player.Position.Y - 12,
+		Width:  16,
+		Height: 24,
 	}
 
 	// --- A. Bullet vs Enemies & Fuel Depots ---
@@ -256,6 +272,12 @@ func (g *Game) checkCollisions(dt float32) {
 			continue
 		}
 
+		// Vertical proximity check before detailed AABB
+		enemyPos := enemy.GetPosition()
+		if math.Abs(float64(enemyPos.Y-g.Player.Position.Y)) > 60 {
+			continue
+		}
+
 		if rl.CheckCollisionRecs(playerHitbox, enemy.GetBounds()) {
 			enemy.SetActive(false)
 			g.Particles.AddExplosion(enemy.GetPosition(), false)
@@ -269,11 +291,14 @@ func (g *Game) checkCollisions(dt float32) {
 		if !bridge.IsActive() || bridge.Destroyed {
 			continue
 		}
+		if math.Abs(float64(bridge.Position.Y-g.Player.Position.Y)) > 35 {
+			continue
+		}
 		bridgeHitbox := rl.Rectangle{
 			X:      bridge.LeftBankX,
-			Y:      bridge.Position.Y - 12,
+			Y:      bridge.Position.Y - 10,
 			Width:  bridge.RightBankX - bridge.LeftBankX,
-			Height: 24,
+			Height: 20,
 		}
 		if rl.CheckCollisionRecs(playerHitbox, bridgeHitbox) {
 			g.triggerPlayerDeath("COLLIDED WITH RIVER CROSSING BRIDGE")
@@ -283,9 +308,9 @@ func (g *Game) checkCollisions(dt float32) {
 
 	// --- E. Player vs River Shorelines / Islands (Terrain Crash) ---
 	// Check multiple sample points on player jet (nose, left wing, right wing)
-	nosePt := rl.Vector2{X: g.Player.Position.X, Y: g.Player.Position.Y - 14}
-	lWingPt := rl.Vector2{X: g.Player.Position.X - 12, Y: g.Player.Position.Y + 4}
-	rWingPt := rl.Vector2{X: g.Player.Position.X + 12, Y: g.Player.Position.Y + 4}
+	nosePt := rl.Vector2{X: g.Player.Position.X, Y: g.Player.Position.Y - 12}
+	lWingPt := rl.Vector2{X: g.Player.Position.X - 9, Y: g.Player.Position.Y + 2}
+	rWingPt := rl.Vector2{X: g.Player.Position.X + 9, Y: g.Player.Position.Y + 2}
 
 	if !g.World.IsPointInWater(nosePt.X, nosePt.Y) ||
 		!g.World.IsPointInWater(lWingPt.X, lWingPt.Y) ||

@@ -49,6 +49,7 @@ func (h *Helicopter) GetType() SpriteType {
 	return TypeHelicopter
 }
 
+// Update advances rotor animation and default patrol movement.
 func (h *Helicopter) Update(dt float32) {
 	if !h.Active {
 		return
@@ -68,6 +69,59 @@ func (h *Helicopter) Update(dt float32) {
 		h.Direction = 1.0
 	} else if h.Position.X >= h.PatrolMaxX {
 		h.Position.X = h.PatrolMaxX
+		h.Velocity.X = -float32(math.Abs(float64(h.Velocity.X)))
+		h.Direction = -1.0
+	}
+}
+
+// UpdateWithRiverBounds updates the helicopter position ensuring it respects riverbanks and island shores.
+func (h *Helicopter) UpdateWithRiverBounds(dt float32, leftBank, rightBank float32, hasIsland bool, islLeft, islRight float32) {
+	if !h.Active {
+		return
+	}
+
+	h.Age += dt
+	h.RotorAngle += h.RotorSpeed * dt
+	if h.RotorAngle > math.Pi*2 {
+		h.RotorAngle -= math.Pi * 2
+	}
+
+	halfW := h.Size.X / 2.0
+	margin := float32(2.0)
+
+	minX := leftBank + halfW + margin
+	maxX := rightBank - halfW - margin
+
+	if hasIsland {
+		islandMid := (islLeft + islRight) / 2.0
+		if h.Position.X < islandMid {
+			// Patrol in left channel
+			maxX = islLeft - halfW - margin
+			if maxX <= minX {
+				maxX = minX + 2.0
+			}
+		} else {
+			// Patrol in right channel
+			minX = islRight + halfW + margin
+			if minX >= maxX {
+				minX = maxX - 2.0
+			}
+		}
+	}
+
+	h.PatrolMinX = minX
+	h.PatrolMaxX = maxX
+
+	// Lateral movement
+	h.Position.X += h.Velocity.X * dt
+
+	// Reverse when hitting left/right boundaries or island edges
+	if h.Position.X <= minX {
+		h.Position.X = minX
+		h.Velocity.X = float32(math.Abs(float64(h.Velocity.X)))
+		h.Direction = 1.0
+	} else if h.Position.X >= maxX {
+		h.Position.X = maxX
 		h.Velocity.X = -float32(math.Abs(float64(h.Velocity.X)))
 		h.Direction = -1.0
 	}

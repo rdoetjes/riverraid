@@ -45,6 +45,7 @@ func (s *Ship) GetType() SpriteType {
 	return TypeShip
 }
 
+// Update advances animation and default patrol movement.
 func (s *Ship) Update(dt float32) {
 	if !s.Active {
 		return
@@ -61,6 +62,56 @@ func (s *Ship) Update(dt float32) {
 		s.Direction = 1.0
 	} else if s.Position.X >= s.PatrolMaxX {
 		s.Position.X = s.PatrolMaxX
+		s.Velocity.X = -float32(math.Abs(float64(s.Velocity.X)))
+		s.Direction = -1.0
+	}
+}
+
+// UpdateWithRiverBounds updates the ship position ensuring it strictly reverses at riverbanks and island shores.
+func (s *Ship) UpdateWithRiverBounds(dt float32, leftBank, rightBank float32, hasIsland bool, islLeft, islRight float32) {
+	if !s.Active {
+		return
+	}
+
+	s.Age += dt
+	s.RadarAngle += 6.0 * dt
+
+	halfW := s.Size.X / 2.0
+	margin := float32(4.0)
+
+	minX := leftBank + halfW + margin
+	maxX := rightBank - halfW - margin
+
+	if hasIsland {
+		islandMid := (islLeft + islRight) / 2.0
+		if s.Position.X < islandMid {
+			// Cruising in left channel
+			maxX = islLeft - halfW - margin
+			if maxX <= minX {
+				maxX = minX + 2.0
+			}
+		} else {
+			// Cruising in right channel
+			minX = islRight + halfW + margin
+			if minX >= maxX {
+				minX = maxX - 2.0
+			}
+		}
+	}
+
+	s.PatrolMinX = minX
+	s.PatrolMaxX = maxX
+
+	// Lateral movement
+	s.Position.X += s.Velocity.X * dt
+
+	// Reverse when hitting left/right boundaries or island edges
+	if s.Position.X <= minX {
+		s.Position.X = minX
+		s.Velocity.X = float32(math.Abs(float64(s.Velocity.X)))
+		s.Direction = 1.0
+	} else if s.Position.X >= maxX {
+		s.Position.X = maxX
 		s.Velocity.X = -float32(math.Abs(float64(s.Velocity.X)))
 		s.Direction = -1.0
 	}
