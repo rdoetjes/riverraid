@@ -34,7 +34,7 @@ func (g *Game) Draw() {
 	g.drawBridges(shakeX, shakeY)
 
 	// 4. Render Surface & Aerial Entities (Ships, Depots, Choppers, Enemy Jets)
-	g.drawEnemies(shakeX, shakeY)
+	g.drawEnemies(shakeX, shakeY) // Draw enemies (including destroyer)
 
 	// 5. Render Player Jet
 	g.drawPlayer(shakeX, shakeY)
@@ -47,6 +47,8 @@ func (g *Game) Draw() {
 	g.drawParticles(shakeX, shakeY)
 
 	// 8. Render HUD & Menus (Screen Space)
+	playerSection := g.World.GetSectionAt(g.Player.Position.Y)
+
 	switch g.State {
 	case StatePlaying:
 		g.HUD.Draw(
@@ -55,7 +57,7 @@ func (g *Game) Draw() {
 			g.Player.Score,
 			g.HighScore,
 			g.Player.Lives,
-			g.World.CurrentSection,
+			playerSection,
 			g.Player.SpeedMultiplier,
 		)
 
@@ -66,7 +68,7 @@ func (g *Game) Draw() {
 			g.Player.Score,
 			g.HighScore,
 			g.Player.Lives,
-			g.World.CurrentSection,
+			playerSection,
 			1.0,
 		)
 		g.drawDeathOverlay()
@@ -78,7 +80,7 @@ func (g *Game) Draw() {
 			g.Player.Score,
 			g.HighScore,
 			g.Player.Lives,
-			g.World.CurrentSection,
+			playerSection,
 			g.Player.SpeedMultiplier,
 		)
 		g.Menu.DrawPause()
@@ -87,7 +89,7 @@ func (g *Game) Draw() {
 		g.Menu.DrawTitle(g.HighScore)
 
 	case StateGameOver:
-		g.Menu.DrawGameOver(g.Player.Score, g.HighScore, g.World.CurrentSection, g.GameOverReason)
+		g.Menu.DrawGameOver(g.Player.Score, g.HighScore, playerSection, g.GameOverReason)
 	}
 
 	rl.EndDrawing()

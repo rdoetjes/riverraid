@@ -161,11 +161,11 @@ func (s *Ship) Draw() {
 		rl.Color{R: 200, G: 235, B: 255, A: 70},
 	)
 
-	// 2. Hull (Modern Angular Stealth Destroyer)
-	hullColor := rl.Color{R: 90, G: 100, B: 115, A: 255}
-	deckColor := rl.Color{R: 120, G: 130, B: 145, A: 255}
-	superstructureColor := rl.Color{R: 70, G: 80, B: 95, A: 255}
-	darkTrim := rl.Color{R: 45, G: 50, B: 60, A: 255}
+	// 2. Hull (Modern Angular Stealth Destroyer - Neutral Grey)
+	hullColor := rl.Color{R: 105, G: 110, B: 115, A: 255}
+	deckColor := rl.Color{R: 130, G: 135, B: 140, A: 255}
+	superstructureColor := rl.Color{R: 85, G: 90, B: 95, A: 255}
+	darkTrim := rl.Color{R: 50, G: 52, B: 55, A: 255}
 
 	hullPts := []rl.Vector2{
 		{X: center.X + dir*halfW, Y: center.Y},               // Bow point

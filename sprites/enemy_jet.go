@@ -99,10 +99,10 @@ func (ej *EnemyJet) Draw() {
 		rl.Color{R: 255, G: 240, B: 100, A: 255},
 	)
 
-	// 3. Airframe: Swept Delta Interceptor (Crimson / Stealth Charcoal)
-	mainCol := rl.Color{R: 190, G: 45, B: 45, A: 255}
-	darkCol := rl.Color{R: 130, G: 25, B: 25, A: 255}
-	trimCol := rl.Color{R: 50, G: 20, B: 20, A: 255}
+	// 3. Airframe: Swept Delta Interceptor (Army Green)
+	mainCol := rl.Color{R: 75, G: 90, B: 45, A: 255}
+	darkCol := rl.Color{R: 50, G: 65, B: 30, A: 255}
+	trimCol := rl.Color{R: 30, G: 40, B: 20, A: 255}
 
 	nosePt := rl.Vector2{X: center.X + dir*17, Y: center.Y}
 	leftWingPt := rl.Vector2{X: center.X - dir*12, Y: center.Y - 12}

@@ -92,6 +92,37 @@ func (g *Game) Update(dt float32) {
 	// Update active bridges
 	for _, bridge := range g.World.Bridges {
 		bridge.Update(dt)
+
+		// From level 3, bridge vehicles shoot at the player
+		if g.World.CurrentSection >= 3 && !bridge.Destroyed && bridge.Active {
+			if bridge.FireCooldown > 0 {
+				bridge.FireCooldown -= dt
+			} else {
+				// Check if player is within range and in front of the bridge
+				vehiclePos := rl.Vector2{X: bridge.VehicleX, Y: bridge.Position.Y}
+				dist := rl.Vector2Distance(vehiclePos, g.Player.Position)
+
+				// Fire if player is within 400px and vertically close (to simulate tactical firing)
+				if dist < 400.0 && g.Player.Position.Y > bridge.Position.Y-350 {
+					// Aim bullet towards player
+					dx := g.Player.Position.X - vehiclePos.X
+					dy := g.Player.Position.Y - vehiclePos.Y
+					angle := math.Atan2(float64(dy), float64(dx))
+
+					bulletSpeed := float32(280.0)
+					bulletVel := rl.Vector2{
+						X: float32(math.Cos(angle)) * bulletSpeed,
+						Y: float32(math.Sin(angle)) * bulletSpeed,
+					}
+
+					bullet := sprites.NewBullet(vehiclePos, bulletVel, false)
+					g.Bullets = append(g.Bullets, bullet)
+
+					bridge.FireCooldown = 2.5 + float32(math.Max(0, 1.5-float64(g.World.CurrentSection)*0.1)) // Faster firing at higher levels
+					g.Audio.Play(audio.SoundShoot)
+				}
+			}
+		}
 	}
 
 	// Update active enemies with dynamic riverbank & island boundary detection
@@ -153,6 +184,28 @@ func (g *Game) updateEnemies(dt float32) {
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
 		case *sprites.Helicopter:
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
+		case *sprites.Destroyer:
+			e.UpdateWithHunterLogic(dt, g.Player.Position, leftBank, rightBank, hasIsland, islLeft, islRight)
+			// Destroyer Firing Logic: Shoot until player passes
+			if e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
+				dist := rl.Vector2Distance(e.Position, g.Player.Position)
+				// playerY > e.Position.Y means player is "south" (behind) of the ship
+				if dist < 450.0 && g.Player.Position.Y > e.Position.Y {
+					// Fire bullet towards player
+					dx := g.Player.Position.X - e.Position.X
+					dy := g.Player.Position.Y - e.Position.Y
+					angle := math.Atan2(float64(dy), float64(dx))
+
+					bulletSpeed := float32(320.0)
+					bulletVel := rl.Vector2{
+						X: float32(math.Cos(angle)) * bulletSpeed,
+						Y: float32(math.Sin(angle)) * bulletSpeed,
+					}
+					g.Bullets = append(g.Bullets, sprites.NewBullet(e.Position, bulletVel, false))
+					e.FireCooldown = 2.0
+					g.Audio.Play(audio.SoundShoot)
+				}
+			}
 		case *sprites.SAMSite:
 			e.Update(dt)
 			// SAM Site Firing Logic
@@ -228,6 +281,8 @@ func (g *Game) checkCollisions(dt float32) {
 				case *sprites.Ship:
 					pts = e.ScoreValue
 				case *sprites.EnemyJet:
+					pts = e.ScoreValue
+				case *sprites.Destroyer:
 					pts = e.ScoreValue
 				case *sprites.FuelDepot:
 					pts = e.ScoreValue

@@ -19,6 +19,7 @@ type Bridge struct {
 	ScoreValue       int
 	VehicleX         float32
 	VehicleDir       float32
+	FireCooldown     float32
 }
 
 // NewBridge creates a new river bridge spanning between left and right banks.

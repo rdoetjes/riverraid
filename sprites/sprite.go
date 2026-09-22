@@ -12,6 +12,7 @@ const (
 	TypeHelicopter
 	TypeShip
 	TypeEnemyJet
+	TypeDestroyer
 	TypeFuelDepot
 	TypeBridge
 	TypeSAMSite

@@ -17,6 +17,9 @@ const (
 	DecoRock
 	DecoRadarStation
 	DecoBunker
+	DecoHouse
+	DecoBuilding
+	DecoBush
 )
 
 // TerrainDecoration represents an environmental vector prop on the riverbanks.
@@ -146,5 +149,58 @@ func (td *TerrainDecoration) Draw() {
 		ui.DrawBeveledRect(bunkerRec, 4*s, rl.Color{R: 65, G: 70, B: 60, A: 255}, rl.Color{R: 35, G: 40, B: 30, A: 255}, 1.5)
 		// Slit window
 		rl.DrawRectangle(int32(center.X-5*s), int32(center.Y-2*s), int32(10*s), int32(3*s), rl.Color{R: 15, G: 20, B: 15, A: 255})
+
+	case DecoHouse:
+		// Suburban house (top-down view)
+		w, h := float32(24*s), float32(20*s)
+		rect := rl.Rectangle{X: center.X - w/2, Y: center.Y - h/2, Width: w, Height: h}
+
+		// Shadow
+		ui.DrawDropShadow([]rl.Vector2{
+			{X: rect.X, Y: rect.Y}, {X: rect.X + w, Y: rect.Y},
+			{X: rect.X + w, Y: rect.Y + h}, {X: rect.X, Y: rect.Y + h},
+		}, rl.Vector2{X: -6 * s, Y: 6 * s}, 60)
+
+		// Roof color (Terracotta red or Dark Grey)
+		roofCol := rl.Color{R: 160, G: 70, B: 50, A: 255}
+		ui.DrawBeveledRect(rect, 2*s, roofCol, rl.Color{R: 80, G: 30, B: 20, A: 255}, 1.2)
+
+		// Roof ridge line (Pitched roof look from above)
+		rl.DrawLineEx(rl.Vector2{X: rect.X + 4*s, Y: center.Y}, rl.Vector2{X: rect.X + w - 4*s, Y: center.Y}, 1.5, rl.Color{R: 200, G: 110, B: 90, A: 255})
+
+		// Chimney
+		rl.DrawRectangle(int32(rect.X+w-8*s), int32(rect.Y+4*s), int32(4*s), int32(4*s), rl.Color{R: 60, G: 65, B: 70, A: 255})
+
+	case DecoBuilding:
+		// Industrial/Office building
+		w, h := float32(32*s), float32(38*s)
+		rect := rl.Rectangle{X: center.X - w/2, Y: center.Y - h/2, Width: w, Height: h}
+
+		// Shadow
+		ui.DrawDropShadow([]rl.Vector2{
+			{X: rect.X, Y: rect.Y}, {X: rect.X + w, Y: rect.Y},
+			{X: rect.X + w, Y: rect.Y + h}, {X: rect.X, Y: rect.Y + h},
+		}, rl.Vector2{X: -10 * s, Y: 10 * s}, 70)
+
+		// Flat roof (Grey concrete)
+		ui.DrawBeveledRect(rect, 3*s, rl.Color{R: 110, G: 115, B: 120, A: 255}, rl.Color{R: 60, G: 65, B: 70, A: 255}, 1.5)
+
+		// Rooftop details (HVAC units, flat segments)
+		hvacCol := rl.Color{R: 85, G: 90, B: 95, A: 255}
+		rl.DrawRectangle(int32(center.X-10*s), int32(center.Y-12*s), int32(8*s), int32(8*s), hvacCol)
+		rl.DrawRectangle(int32(center.X+2*s), int32(center.Y+4*s), int32(10*s), int32(10*s), hvacCol)
+
+		// Solar panels or maintenance hatches
+		rl.DrawRectangle(int32(center.X-12*s), int32(center.Y+6*s), int32(10*s), int32(6*s), rl.Color{R: 40, G: 60, B: 100, A: 200})
+
+	case DecoBush:
+		// Low-profile foliage cluster
+		shadowOffset := rl.Vector2{X: -3 * s, Y: 3 * s}
+		rl.DrawCircleV(rl.Vector2Add(center, shadowOffset), 6*s, rl.Color{R: 10, G: 30, B: 10, A: 50})
+
+		bushCol := rl.Color{R: 40, G: 95, B: 35, A: 255}
+		rl.DrawCircleV(center, 6*s, bushCol)
+		rl.DrawCircleV(rl.Vector2{X: center.X - 3*s, Y: center.Y - 2*s}, 4.5*s, rl.Color{R: 55, G: 120, B: 45, A: 255})
+		rl.DrawCircleV(rl.Vector2{X: center.X + 2*s, Y: center.Y - 1*s}, 4*s, rl.Color{R: 70, G: 145, B: 55, A: 255})
 	}
 }

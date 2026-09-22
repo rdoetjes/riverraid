@@ -12,11 +12,13 @@ Featuring procedural river generation, dynamic embankments and islands, 21st-cen
 - **21st-Century Vector Graphics:**
   - **Stealth Fighter Jet:** F-22 inspired airframe with animated bank roll tilting, twin afterburner flame particles, drop shadows, and wingtip contrails.
   - **AH-64 Attack Helicopters:** Side-patrolling combat choppers with spinning rotor motion blur discs, tail rotors, and weapon pylons.
-  - **Stealth Destroyers / Ships:** Modern warship hulls with rotating radar masts, gun turrets, and water wake foam trails.
-  - **Interceptor Jets:** High-speed delta-wing enemy jets streaking across the airspace.
+  - **Stealth Destroyers / Ships:** Modern warship hulls in neutral grey with rotating radar masts, gun turrets, and water wake foam trails.
+  - **Hunter Destroyers:** Elite naval units (encountered from Zone 04 onwards) that laterally pursue the player and engage with precision turret fire.
+  - **Interceptor Jets:** High-speed Army Green delta-wing enemy jets streaking across the airspace.
   - **Offshore Fuel Depots:** Floating fuel platforms with storage tanks, safety hazard stripes, illuminated "FUEL" signage, and beacon lights.
   - **SAM Missile Sites:** Shore-based radar-guided missile batteries (encountered from Zone 05 onwards) that detect the player and launch persistent heat-seeking missiles.
-  - **River Bridges:** Multi-lane truss bridges spanning the river with road markings, crossing military vehicles, and multi-stage collapse animations when destroyed.
+  - **River Bridges:** Multi-lane truss bridges spanning the river with road markings, crossing military vehicles that engage the player (from Zone 03 onwards), and multi-stage collapse animations when destroyed.
+  - **Dynamic Scenery:** Top-down vector-rendered pine/deciduous trees, coastal rocks, radar stations, military bunkers, suburban houses, and industrial buildings populating the embankments.
   - **Particle FX:** Explosive fire bursts, shockwaves, smoke plumes, water splash rings, and flying metal debris.
 - **Tactical Flight HUD:** Futuristic cockpit instruments including dynamic fuel gauge with low-fuel alarms, digital score readout, reserve lives, sector indicators, and tactical popups.
 - **Procedural Audio & Asset Placeholders:** Pure Go procedural sound synthesizer producing sound effects out of the box, with support for custom `.wav` files in `assets/sounds/`.
