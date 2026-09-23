@@ -38,13 +38,8 @@ func (g *Game) HandleInput(dt float32) {
 
 	case StateGameOver:
 		if rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) || rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-			if !g.ScoreSubmitted && g.IsNewHighScore(g.Player.Score) {
-				g.State = StateEnteringName
-				g.EnterNameBuffer = ""
-			} else {
-				g.StartNewGame()
-				g.Audio.Play(audio.SoundShoot)
-			}
+			g.StartNewGame()
+			g.Audio.Play(audio.SoundShoot)
 		}
 
 	case StateEnteringName:

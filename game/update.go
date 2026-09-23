@@ -46,8 +46,13 @@ func (g *Game) Update(dt float32) {
 				g.RespawnPlayer()
 				g.State = StatePlaying
 			} else {
-				g.State = StateGameOver
-				g.GameOverTimer = 10.0
+				if g.IsNewHighScore(g.Player.Score) {
+					g.State = StateEnteringName
+					g.EnterNameBuffer = ""
+				} else {
+					g.State = StateGameOver
+					g.GameOverTimer = 10.0
+				}
 			}
 		}
 		return
