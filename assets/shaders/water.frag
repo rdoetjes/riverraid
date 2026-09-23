@@ -84,8 +84,8 @@ void main()
     // ADD NOISE DISTORTION: Warp the Voronoi input to make it less circular
     float warpAmt = 0.65;
     vec2 warp = vec2(
-        noise(voronoiUv * 1.85 + time * 0.5),
-        noise(voronoiUv * 1.95 - time * 0.5)
+        noise(voronoiUv * 2.85 + time * 0.5),
+        noise(voronoiUv * 3.95 - time * 0.5)
     );
 
     float v = voronoi(voronoiUv + warp * warpAmt);
@@ -97,7 +97,7 @@ void main()
     vec3 headColor = vec3(0.55, 0.82, 1.0);
 
     // Pulse the intensity
-    float pulse = 0.6 + 0.4 * sin(time * 0.92)*0.2;
+    float pulse = 0.9 + 0.4 * sin(time * 0.92)*0.2;
 
     color = mix(color, headColor, waveHeads * 0.3 * pulse);
 
