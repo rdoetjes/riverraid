@@ -79,7 +79,7 @@ void main()
 
     // --- DISTORTED VORONOI WAVE HEADS ---
     vec2 voronoiUv = uv * vec2(aspect * 9.0, 11.0);
-    voronoiUv.y -= time * 0.15;
+    voronoiUv.y -= time * 0.4;
 
     // ADD NOISE DISTORTION: Warp the Voronoi input to make it less circular
     float warpAmt = 0.65;
