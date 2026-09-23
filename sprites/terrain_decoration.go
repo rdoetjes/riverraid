@@ -27,7 +27,7 @@ type TerrainDecoration struct {
 }
 
 // NewTerrainDecoration creates an environmental decoration.
-func NewTerrainDecoration(pos rl.Vector2, decoType DecorationType, scale float32) *TerrainDecoration {
+func NewTerrainDecoration(pos rl.Vector2, decoType DecorationType, scale float32, rotation float32) *TerrainDecoration {
 	return &TerrainDecoration{
 		BaseSprite: BaseSprite{
 			Position: pos,
@@ -35,7 +35,7 @@ func NewTerrainDecoration(pos rl.Vector2, decoType DecorationType, scale float32
 		},
 		DecoType: decoType,
 		Scale:    scale,
-		Rotation: 0,
+		Rotation: rotation,
 	}
 }
 
@@ -54,5 +54,5 @@ func (td *TerrainDecoration) Draw(tex rl.Texture2D) {
 
 	destRec := rl.Rectangle{X: td.Position.X, Y: td.Position.Y, Width: td.Scale * 32, Height: td.Scale * 32}
 	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
-	rl.DrawTexturePro(tex, rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}, destRec, origin, 0, rl.White)
+	rl.DrawTexturePro(tex, rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}, destRec, origin, td.Rotation, rl.White)
 }

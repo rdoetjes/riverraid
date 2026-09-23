@@ -220,7 +220,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoBunker
 			}
 			scale := 1.0 + rng.Float32()*1.5
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))
+			rotation := float32(rng.Intn(4) * 90)
+			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
 		}
 	}
 
@@ -253,7 +254,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoBunker
 			}
 			scale := 1.0 + rng.Float32()*1.5
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))
+			rotation := float32(rng.Intn(4) * 90)
+			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
 		}
 	}
 
@@ -267,7 +269,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoBush
 			}
 			scale := 1.0 + rng.Float32()*1.5
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))
+			rotation := float32(rng.Intn(4) * 90)
+			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
 		}
 	}
 
