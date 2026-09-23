@@ -1,6 +1,7 @@
 package game
 
 import (
+	"math"
 	"riverraid/audio"
 	"riverraid/sprites"
 
@@ -87,15 +88,26 @@ func (g *Game) handleFlightControls(dt float32) {
 		}
 
 		if playerBulletCount < 3 {
-			// Spawn bullet traveling straight forward (upriver)
+			// Spawn bullet traveling in the direction the nose is pointing (based on BankAngle)
 			bulletSpeed := float32(650.0)
-			bulletPos := rl.Vector2{
-				X: g.Player.Position.X,
-				Y: g.Player.Position.Y - 24,
-			}
+
+			// Calculate horizontal component from banking angle (0.0 center, -1.0 left, 1.0 right)
+			// We'll give it a max diagonal tilt of about 15-20 degrees
+			horizontalFactor := g.Player.BankAngle * 0.35
+
 			bulletVel := rl.Vector2{
-				X: 0,
+				X: horizontalFactor * bulletSpeed,
 				Y: -bulletSpeed,
+			}
+
+			// Normalize velocity to keep consistent speed regardless of direction
+			mag := float32(math.Sqrt(float64(bulletVel.X*bulletVel.X + bulletVel.Y*bulletVel.Y)))
+			bulletVel.X = (bulletVel.X / mag) * bulletSpeed
+			bulletVel.Y = (bulletVel.Y / mag) * bulletSpeed
+
+			bulletPos := rl.Vector2{
+				X: g.Player.Position.X + horizontalFactor*15.0, // Offset spawn point slightly based on tilt
+				Y: g.Player.Position.Y - 24,
 			}
 
 			bullet := sprites.NewBullet(bulletPos, bulletVel, true)
