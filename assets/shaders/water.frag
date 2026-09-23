@@ -91,13 +91,13 @@ void main()
     float v = voronoi(voronoiUv + warp * warpAmt);
 
     // Revert to the soft pow() but with the warped input
-    float waveHeads = pow(max(0.0, 1.0 - v), 3.5);
+    float waveHeads = pow(max(0.0, 1.0 - v), 9.5);
 
     // Light blue color for the wave heads
     vec3 headColor = vec3(0.55, 0.82, 1.0);
 
     // Pulse the intensity
-    float pulse = 0.6 + 0.4 * sin(time * 1.2)*0.2;
+    float pulse = 0.6 + 0.4 * sin(time * 0.92)*0.2;
 
     color = mix(color, headColor, waveHeads * 0.3 * pulse);
 
@@ -107,7 +107,7 @@ void main()
     color += vec3(0.08, 0.12, 0.18) * rippleFactor * 0.3;
 
     // Add soft gradient from top to bottom
-    color *= (0.8 + 0.2 * uv.y);
+    color *= (0.45 + 0.25 * uv.y);
 
     finalColor = vec4(color, 1.0);
 }
