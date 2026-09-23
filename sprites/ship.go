@@ -26,7 +26,7 @@ func NewShip(pos rl.Vector2, minX, maxX float32, speed float32) *Ship {
 		BaseSprite: BaseSprite{
 			Position:  pos,
 			Velocity:  rl.Vector2{X: speed * dir, Y: 0},
-			Size:      rl.Vector2{X: 42, Y: 22},
+			Size:      rl.Vector2{X: 65, Y: 35},
 			Active:    true,
 			Health:    1,
 			MaxHealth: 1,

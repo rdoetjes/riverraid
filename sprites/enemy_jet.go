@@ -26,7 +26,7 @@ func NewEnemyJet(pos rl.Vector2, minX, maxX float32, speed float32) *EnemyJet {
 		BaseSprite: BaseSprite{
 			Position:  pos,
 			Velocity:  rl.Vector2{X: speed * dir, Y: 0},
-			Size:      rl.Vector2{X: 36, Y: 26},
+			Size:      rl.Vector2{X: 40, Y: 33},
 			Active:    true,
 			Health:    1,
 			MaxHealth: 1,

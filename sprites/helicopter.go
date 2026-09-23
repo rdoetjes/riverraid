@@ -28,7 +28,7 @@ func NewHelicopter(pos rl.Vector2, minX, maxX float32, speed float32) *Helicopte
 		BaseSprite: BaseSprite{
 			Position:  pos,
 			Velocity:  rl.Vector2{X: speed * dir, Y: 0},
-			Size:      rl.Vector2{X: 30, Y: 30},
+			Size:      rl.Vector2{X: 38, Y: 38},
 			Active:    true,
 			Health:    1,
 			MaxHealth: 1,
