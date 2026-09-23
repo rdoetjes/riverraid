@@ -159,9 +159,9 @@ func (g *Game) drawRiverAndTerrain(sx, sy float32) {
 		}, landMid)
 
 		// Sandy beach border line
-		rl.DrawLineEx(rl.Vector2{X: l0, Y: screenY0}, rl.Vector2{X: l1, Y: screenY1}, 3.0, sandCoast)
+		rl.DrawLineEx(rl.Vector2{X: l0, Y: screenY0}, rl.Vector2{X: l1, Y: screenY1}, 8.0, sandCoast)
 		// Shallow water rim
-		rl.DrawLineEx(rl.Vector2{X: l0 + 3.0, Y: screenY0}, rl.Vector2{X: l1 + 3.0, Y: screenY1}, 4.0, waterShallow)
+		rl.DrawLineEx(rl.Vector2{X: l0 + 3.0, Y: screenY0}, rl.Vector2{X: l1 + 3.0, Y: screenY1}, 2.0, waterShallow)
 
 		// --- Right Embankment ---
 		r0 := s0.RightBankX + sx
@@ -183,7 +183,7 @@ func (g *Game) drawRiverAndTerrain(sx, sy float32) {
 		}, landMid)
 
 		// Sandy beach border line
-		rl.DrawLineEx(rl.Vector2{X: r0, Y: screenY0}, rl.Vector2{X: r1, Y: screenY1}, 3.0, sandCoast)
+		rl.DrawLineEx(rl.Vector2{X: r0, Y: screenY0}, rl.Vector2{X: r1, Y: screenY1}, 8.0, sandCoast)
 		// Shallow water rim
 		rl.DrawLineEx(rl.Vector2{X: r0 - 3.0, Y: screenY0}, rl.Vector2{X: r1 - 3.0, Y: screenY1}, 4.0, waterShallow)
 
