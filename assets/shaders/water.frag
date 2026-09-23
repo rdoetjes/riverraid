@@ -38,9 +38,9 @@ float voronoi(vec2 x) {
             vec2 o = hash2(n + g);
 
             // Oscillate the points in the grid
-            o = 0.5 + 0.5 * sin(time * 0.1 + 6.2831 * o);
+            o = 0.8 + 0.8 * sin(time * 0.4 + 6.2831 * o);
 
-            vec2 r = g + o - f;
+            vec2 r = 0.86*g + o - f;
             float d = dot(r, r);
 
             if (d < m) {
@@ -78,14 +78,14 @@ void main()
     vec3 color = mix(waterDeep, waterMid, bob);
 
     // --- DISTORTED VORONOI WAVE HEADS ---
-    vec2 voronoiUv = uv * vec2(aspect * 7.0, 11.0);
-    voronoiUv.y -= time * 0.2;
+    vec2 voronoiUv = uv * vec2(aspect * 9.0, 11.0);
+    voronoiUv.y -= time * 0.15;
 
     // ADD NOISE DISTORTION: Warp the Voronoi input to make it less circular
     float warpAmt = 0.65;
     vec2 warp = vec2(
-        noise(voronoiUv * 1.5 + time * 0.5),
-        noise(voronoiUv * 1.5 - time * 0.5)
+        noise(voronoiUv * 1.85 + time * 0.5),
+        noise(voronoiUv * 1.95 - time * 0.5)
     );
 
     float v = voronoi(voronoiUv + warp * warpAmt);
@@ -97,7 +97,7 @@ void main()
     vec3 headColor = vec3(0.55, 0.82, 1.0);
 
     // Pulse the intensity
-    float pulse = 0.6 + 0.4 * sin(time * 1.2);
+    float pulse = 0.6 + 0.4 * sin(time * 1.2)*0.2;
 
     color = mix(color, headColor, waveHeads * 0.3 * pulse);
 
