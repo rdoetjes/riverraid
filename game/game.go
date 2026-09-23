@@ -123,8 +123,10 @@ func (g *Game) StartNewGame() {
 	g.ScoreForNextLife = 10000
 	g.LastCheckpointY = 0
 	g.GameOverReason = ""
-	g.RespawnTimer = 0
-	g.State = StatePlaying
+	g.RespawnTimer = 0.1
+	g.State = StateDying
+	g.Player.Active = false
+	g.Player.Lives = 3
 
 	g.HUD.SetAlert("SORTIE INITIATED - GOOD LUCK PILOT", 2.5, rl.Color{R: 0, G: 240, B: 255, A: 255})
 }
