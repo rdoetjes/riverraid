@@ -42,7 +42,7 @@ func (h *HUD) Update(dt float32) {
 // Draw renders the cockpit HUD overlay.
 func (h *HUD) Draw(fuel, maxFuel float32, score, highScore, lives, section int, speedMul float32) {
 	// Top status bar panel
-	topBarRec := rl.Rectangle{X: 12, Y: 10, Width: h.ScreenWidth - 24, Height: 48}
+	topBarRec := rl.Rectangle{X: 12, Y: 10, Width: h.ScreenWidth - 20, Height: 48}
 	DrawBeveledRect(topBarRec, 8.0, rl.Color{R: 10, G: 20, B: 30, A: 200}, rl.Color{R: 40, G: 120, B: 180, A: 200}, 1.5)
 
 	// 1. Score Readout
