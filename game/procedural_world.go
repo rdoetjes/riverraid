@@ -245,7 +245,7 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 				decoType = sprites.DecoRock
 			} else if roll < 0.95 {
 				decoType = sprites.DecoRadarStation
-			} else if roll < 0.97 && section >= 4 {
+			} else if roll < 0.97 && section > 4 {
 				// SAM Site spawn on right bank - from Level 4 onwards (~2 per section per bank)
 				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
 				return
