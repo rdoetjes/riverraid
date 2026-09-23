@@ -36,7 +36,7 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 
 	if logoTex.ID > 0 {
 		// Draw Logo Texture - significantly larger
-		logoH := float32(200.0)
+		logoH := float32(400.0)
 		logoW := (logoH / float32(logoTex.Height)) * float32(logoTex.Width)
 
 		// If width exceeds 80% screen width, cap it
@@ -48,7 +48,7 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 
 		destRec := rl.Rectangle{
 			X:      cx,
-			Y:      cy - 40,
+			Y:      cy - 80,
 			Width:  logoW,
 			Height: logoH,
 		}
