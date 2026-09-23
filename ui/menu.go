@@ -12,13 +12,15 @@ type Menu struct {
 	ScreenWidth  float32
 	ScreenHeight float32
 	Age          float32
+	Font         rl.Font
 }
 
 // NewMenu creates a new menu system.
-func NewMenu(screenWidth, screenHeight float32) *Menu {
+func NewMenu(screenWidth, screenHeight float32, font rl.Font) *Menu {
 	return &Menu{
 		ScreenWidth:  screenWidth,
 		ScreenHeight: screenHeight,
+		Font:         font,
 	}
 }
 
@@ -69,18 +71,18 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 		titleCol := rl.Color{R: uint8(40 * titleGlow), G: uint8(220 * titleGlow), B: 255, A: 255}
 
 		titleText := "RIVER RAID"
-		titleFont := int32(52)
-		tW := rl.MeasureText(titleText, titleFont)
+		titleFont := float32(52)
+		tSize := rl.MeasureTextEx(m.Font, titleText, titleFont, 1)
 
 		// Shadow/Glow text
-		rl.DrawText(titleText, int32(cx)-tW/2+2, int32(cy)-28+2, titleFont, rl.Color{R: 0, G: 60, B: 100, A: 255})
-		rl.DrawText(titleText, int32(cx)-tW/2, int32(cy)-28, titleFont, titleCol)
+		rl.DrawTextEx(m.Font, titleText, rl.Vector2{X: m.ScreenWidth/2 - tSize.X/2 + 2, Y: cy - 28 + 2}, titleFont, 1, rl.Color{R: 0, G: 60, B: 100, A: 255})
+		rl.DrawTextEx(m.Font, titleText, rl.Vector2{X: m.ScreenWidth/2 - tSize.X/2, Y: cy - 28}, titleFont, 1, titleCol)
 	}
 
 	subText := "21ST CENTURY TACTICAL STRIKE"
-	subFont := int32(14)
-	subW := rl.MeasureText(subText, subFont)
-	rl.DrawText(subText, int32(cx)-subW/2, int32(cy)+32, subFont, rl.Color{R: 240, G: 200, B: 50, A: 240})
+	subFont := float32(14)
+	subSize := rl.MeasureTextEx(m.Font, subText, subFont, 1)
+	rl.DrawTextEx(m.Font, subText, rl.Vector2{X: m.ScreenWidth/2 - subSize.X/2, Y: cy + 32}, subFont, 1, rl.Color{R: 240, G: 200, B: 50, A: 240})
 
 	// Cycle logic: 5s High Scores, 5s Instructions = 10s period
 	period := float32(10.0)
@@ -98,8 +100,8 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 		DrawBeveledRect(boxRec, 10.0, rl.Color{R: 12, G: 24, B: 36, A: 230}, rl.Color{R: 40, G: 140, B: 200, A: 200}, 1.5)
 
 		// Instructions
-		startY := int32(boxRec.Y + 20)
-		rl.DrawText("CONTROLS & TACTICAL PROTOCOL:", int32(boxRec.X+24), startY, 13, rl.Color{R: 0, G: 230, B: 255, A: 240})
+		startY := boxRec.Y + 20
+		rl.DrawTextEx(m.Font, "CONTROLS & TACTICAL PROTOCOL:", rl.Vector2{X: boxRec.X + 24, Y: startY}, 13, 1, rl.Color{R: 0, G: 230, B: 255, A: 240})
 
 		lines := []string{
 			"[ W / UP ]     - Accelerate / Burner",
@@ -118,13 +120,13 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 			if len(line) > 0 && line[0] == '*' {
 				c = rl.Color{R: 255, G: 215, B: 80, A: 240}
 			}
-			rl.DrawText(line, int32(boxRec.X+24), startY+24+int32(i*18), 12, c)
+			rl.DrawTextEx(m.Font, line, rl.Vector2{X: boxRec.X + 24, Y: startY + 24 + float32(i*18)}, 12, 1, c)
 		}
 
 		// High Score (Static footer)
 		hiStr := fmt.Sprintf("TOP PILOT RECORD: %06d", highScore)
-		hiW := rl.MeasureText(hiStr, 15)
-		rl.DrawText(hiStr, int32(cx)-hiW/2, int32(boxRec.Y+boxH+20), 15, rl.Color{R: 240, G: 200, B: 50, A: 255})
+		hiSize := rl.MeasureTextEx(m.Font, hiStr, 15, 1)
+		rl.DrawTextEx(m.Font, hiStr, rl.Vector2{X: m.ScreenWidth/2 - hiSize.X/2, Y: boxRec.Y + boxH + 20}, 15, 1, rl.Color{R: 240, G: 200, B: 50, A: 255})
 	}
 
 	// Apply a fade-out/fade-in overlay to the content area at transition points
@@ -147,8 +149,8 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 	// Blinking Prompt (Always visible)
 	if math.Sin(float64(m.Age*5.0)) > -0.2 {
 		prompt := ">> PRESS SPACE OR ENTER TO LAUNCH <<"
-		pW := rl.MeasureText(prompt, 18)
-		rl.DrawText(prompt, int32(cx)-pW/2, int32(m.ScreenHeight-50), 18, rl.Color{R: 40, G: 255, B: 140, A: 255})
+		pSize := rl.MeasureTextEx(m.Font, prompt, 18, 1)
+		rl.DrawTextEx(m.Font, prompt, rl.Vector2{X: m.ScreenWidth/2 - pSize.X/2, Y: m.ScreenHeight - 50}, 18, 1, rl.Color{R: 40, G: 255, B: 140, A: 255})
 	}
 }
 
@@ -161,13 +163,13 @@ func (m *Menu) DrawGameOver(score, highScore, section int, reason string, format
 
 	// "MISSION FAILED"
 	titleText := "MISSION FAILED"
-	titleFont := int32(38)
-	tW := rl.MeasureText(titleText, titleFont)
-	rl.DrawText(titleText, int32(cx)-tW/2, int32(cy)-40, titleFont, rl.Color{R: 255, G: 50, B: 50, A: 255})
+	titleFont := float32(38)
+	tSize := rl.MeasureTextEx(m.Font, titleText, titleFont, 1)
+	rl.DrawTextEx(m.Font, titleText, rl.Vector2{X: m.ScreenWidth/2 - tSize.X/2, Y: cy - 40}, titleFont, 1, rl.Color{R: 255, G: 50, B: 50, A: 255})
 
 	// Debrief Reason
-	rW := rl.MeasureText(reason, 14)
-	rl.DrawText(reason, int32(cx)-rW/2, int32(cy)+2, 14, rl.Color{R: 240, G: 180, B: 160, A: 240})
+	rSize := rl.MeasureTextEx(m.Font, reason, 14, 1)
+	rl.DrawTextEx(m.Font, reason, rl.Vector2{X: m.ScreenWidth/2 - rSize.X/2, Y: cy + 2}, 14, 1, rl.Color{R: 240, G: 180, B: 160, A: 240})
 
 	// High Score Table
 	m.DrawHighScores(cx, cy+30, formattedScores)
@@ -175,8 +177,8 @@ func (m *Menu) DrawGameOver(score, highScore, section int, reason string, format
 	// Restart Prompt
 	if math.Sin(float64(m.Age*5.0)) > -0.2 {
 		restartPrompt := "PRESS SPACE OR ENTER TO CONTINUE"
-		rstW := rl.MeasureText(restartPrompt, 18)
-		rl.DrawText(restartPrompt, int32(cx)-rstW/2, int32(m.ScreenHeight-50), 18, rl.Color{R: 255, G: 240, B: 100, A: 255})
+		rstSize := rl.MeasureTextEx(m.Font, restartPrompt, 18, 1)
+		rl.DrawTextEx(m.Font, restartPrompt, rl.Vector2{X: m.ScreenWidth/2 - rstSize.X/2, Y: m.ScreenHeight - 50}, 18, 1, rl.Color{R: 255, G: 240, B: 100, A: 255})
 	}
 }
 
@@ -187,15 +189,15 @@ func (m *Menu) DrawHighScores(cx, cy float32, formattedScores []string) {
 	DrawBeveledRect(tableRec, 8.0, rl.Color{R: 25, G: 18, B: 22, A: 240}, rl.Color{R: 40, G: 140, B: 200, A: 200}, 1.5)
 
 	header := "TOP 10 ACE PILOTS"
-	hW := rl.MeasureText(header, 18)
-	rl.DrawText(header, int32(cx)-hW/2, int32(cy+15), 18, rl.Color{R: 0, G: 220, B: 255, A: 255})
+	hSize := rl.MeasureTextEx(m.Font, header, 18, 1)
+	rl.DrawTextEx(m.Font, header, rl.Vector2{X: m.ScreenWidth/2 - hSize.X/2, Y: cy + 15}, 18, 1, rl.Color{R: 0, G: 220, B: 255, A: 255})
 
 	for i, entry := range formattedScores {
 		color := rl.Color{R: 255, G: 255, B: 255, A: 255}
 		if i == 0 {
 			color = rl.Color{R: 255, G: 215, B: 0, A: 255} // Gold for #1
 		}
-		rl.DrawText(entry, int32(tableRec.X+30), int32(cy+50+float32(i*24)), 16, color)
+		rl.DrawTextEx(m.Font, entry, rl.Vector2{X: tableRec.X + 30, Y: cy + 50 + float32(i*24)}, 16, 1, color)
 	}
 }
 
@@ -206,16 +208,16 @@ func (m *Menu) DrawNameEntry(score int, buffer string) {
 	cy := m.ScreenHeight / 2
 
 	title := "NEW HIGH SCORE!"
-	tW := rl.MeasureText(title, 32)
-	rl.DrawText(title, int32(cx)-tW/2, int32(cy-100), 32, rl.Color{R: 40, G: 255, B: 140, A: 255})
+	tSize := rl.MeasureTextEx(m.Font, title, 32, 1)
+	rl.DrawTextEx(m.Font, title, rl.Vector2{X: m.ScreenWidth/2 - tSize.X/2, Y: cy - 100}, 32, 1, rl.Color{R: 40, G: 255, B: 140, A: 255})
 
 	scoreStr := fmt.Sprintf("SCORE: %06d", score)
-	sW := rl.MeasureText(scoreStr, 22)
-	rl.DrawText(scoreStr, int32(cx)-sW/2, int32(cy-50), 22, rl.White)
+	sSize := rl.MeasureTextEx(m.Font, scoreStr, 22, 1)
+	rl.DrawTextEx(m.Font, scoreStr, rl.Vector2{X: m.ScreenWidth/2 - sSize.X/2, Y: cy - 50}, 22, 1, rl.White)
 
 	prompt := "ENTER YOUR INITIALS:"
-	pW := rl.MeasureText(prompt, 18)
-	rl.DrawText(prompt, int32(cx)-pW/2, int32(cy), 18, rl.Color{R: 0, G: 220, B: 255, A: 255})
+	pSize := rl.MeasureTextEx(m.Font, prompt, 18, 1)
+	rl.DrawTextEx(m.Font, prompt, rl.Vector2{X: m.ScreenWidth/2 - pSize.X/2, Y: cy}, 18, 1, rl.Color{R: 0, G: 220, B: 255, A: 255})
 
 	// 3-letter boxes
 	boxSize := float32(50)
@@ -229,8 +231,8 @@ func (m *Menu) DrawNameEntry(score int, buffer string) {
 
 		if i < len(buffer) {
 			char := string(buffer[i])
-			cW := rl.MeasureText(char, 32)
-			rl.DrawText(char, int32(rect.X+boxSize/2)-cW/2, int32(rect.Y+10), 32, rl.White)
+			cSize := rl.MeasureTextEx(m.Font, char, 32, 1)
+			rl.DrawTextEx(m.Font, char, rl.Vector2{X: rect.X + boxSize/2 - cSize.X/2, Y: rect.Y + 10}, 32, 1, rl.White)
 		} else if i == len(buffer) {
 			// Blinking cursor
 			if int(m.Age*4)%2 == 0 {
@@ -241,8 +243,8 @@ func (m *Menu) DrawNameEntry(score int, buffer string) {
 
 	if len(buffer) == 3 {
 		confirm := "PRESS ENTER TO COMMIT RECORD"
-		cW := rl.MeasureText(confirm, 16)
-		rl.DrawText(confirm, int32(cx)-cW/2, int32(cy+120), 16, rl.Color{R: 255, G: 220, B: 60, A: 255})
+		cSize := rl.MeasureTextEx(m.Font, confirm, 16, 1)
+		rl.DrawTextEx(m.Font, confirm, rl.Vector2{X: m.ScreenWidth/2 - cSize.X/2, Y: cy + 120}, 16, 1, rl.Color{R: 255, G: 220, B: 60, A: 255})
 	}
 }
 
@@ -254,10 +256,10 @@ func (m *Menu) DrawPause() {
 	cy := m.ScreenHeight / 2
 
 	pauseText := "TACTICAL PAUSE"
-	pW := rl.MeasureText(pauseText, 36)
-	rl.DrawText(pauseText, int32(cx)-pW/2, int32(cy)-30, 36, rl.Color{R: 0, G: 220, B: 255, A: 255})
+	pSize := rl.MeasureTextEx(m.Font, pauseText, 36, 1)
+	rl.DrawTextEx(m.Font, pauseText, rl.Vector2{X: cx - pSize.X/2, Y: cy - 30}, 36, 1, rl.Color{R: 0, G: 220, B: 255, A: 255})
 
 	sub := "PRESS P OR ESCAPE TO RESUME"
-	sW := rl.MeasureText(sub, 16)
-	rl.DrawText(sub, int32(cx)-sW/2, int32(cy)+20, 16, rl.Color{R: 220, G: 240, B: 255, A: 200})
+	sSize := rl.MeasureTextEx(m.Font, sub, 16, 1)
+	rl.DrawTextEx(m.Font, sub, rl.Vector2{X: cx - sSize.X/2, Y: cy + 20}, 16, 1, rl.Color{R: 220, G: 240, B: 255, A: 200})
 }

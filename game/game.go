@@ -72,6 +72,7 @@ type Game struct {
 	WaterShader      rl.Shader
 	TimeLoc          int32
 	ResLoc           int32
+	MainFont         rl.Font
 }
 
 // NewGame constructs and initializes all game subsystems.
@@ -93,8 +94,6 @@ func NewGame(width, height int32) *Game {
 		Missiles:         make([]*sprites.Missile, 0, 16),
 		Particles:        sprites.NewParticleSystem(),
 		Audio:            audio.NewSoundManager(),
-		HUD:              ui.NewHUD(w, h),
-		Menu:             ui.NewMenu(w, h),
 		Textures:         make(map[string]rl.Texture2D),
 		HighScore:        0,
 		ScoreForNextLife: 10000,
@@ -102,8 +101,13 @@ func NewGame(width, height int32) *Game {
 	}
 
 	g.loadAllTextures()
+	g.loadFonts()
 	g.loadShaders()
 	g.LoadHighScores()
+
+	// Initialize HUD and Menu with the font
+	g.HUD = ui.NewHUD(w, h, g.MainFont)
+	g.Menu = ui.NewMenu(w, h, g.MainFont)
 
 	return g
 }
@@ -232,6 +236,15 @@ func (g *Game) loadShaders() {
 	}
 }
 
+func (g *Game) loadFonts() {
+	path := "assets/fonts/Army.ttf"
+	if _, err := os.Stat(path); err == nil {
+		g.MainFont = rl.LoadFont(path)
+	} else {
+		g.MainFont = rl.GetFontDefault()
+	}
+}
+
 // Close cleans up audio and resources.
 func (g *Game) Close() {
 	if g.Audio != nil {
@@ -243,4 +256,5 @@ func (g *Game) Close() {
 	if g.WaterShader.ID > 0 {
 		rl.UnloadShader(g.WaterShader)
 	}
+	rl.UnloadFont(g.MainFont)
 }
