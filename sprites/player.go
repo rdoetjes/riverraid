@@ -148,6 +148,14 @@ func (p *PlayerJet) Draw(tex rl.Texture2D) {
 
 	frameW := float32(tex.Width) / 5.0
 	sourceRec := rl.Rectangle{X: float32(frame) * frameW, Y: 0, Width: frameW, Height: float32(tex.Height)}
+
+	// Mirror the sprite based on banking direction
+	if p.BankAngle < -0.1 {
+		sourceRec.Width *= -1
+	} else if p.BankAngle > 0.1 {
+		// Normal orientation
+	}
+
 	destRec := rl.Rectangle{X: p.Position.X, Y: p.Position.Y, Width: p.Size.X * 1.5, Height: p.Size.Y * 1.5}
 	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
