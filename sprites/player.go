@@ -159,6 +159,14 @@ func (p *PlayerJet) Draw(tex rl.Texture2D) {
 	destRec := rl.Rectangle{X: p.Position.X, Y: p.Position.Y, Width: p.Size.X * 1.5, Height: p.Size.Y * 1.5}
 	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
+	// Draw Shadow
+	shadowOffset := rl.Vector2{X: 12, Y: 12}
+	shadowRec := destRec
+	shadowRec.X += shadowOffset.X
+	shadowRec.Y += shadowOffset.Y
+	rl.DrawTexturePro(tex, sourceRec, shadowRec, origin, 0, rl.Color{R: 0, G: 0, B: 0, A: 110})
+
+	// Draw Sprite
 	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
 
 	// Refueling aura glow
