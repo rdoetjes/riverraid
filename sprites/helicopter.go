@@ -3,8 +3,6 @@ package sprites
 import (
 	"math"
 
-	"riverraid/ui"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -127,99 +125,16 @@ func (h *Helicopter) UpdateWithRiverBounds(dt float32, leftBank, rightBank float
 	}
 }
 
-func (h *Helicopter) Draw() {
+func (h *Helicopter) Draw(tex rl.Texture2D) {
 	if !h.Active {
 		return
 	}
 
-	center := h.Position
+	frame := int(h.Age*12.0) % 4
+	frameW := float32(tex.Width) / 4.0
+	sourceRec := rl.Rectangle{X: float32(frame) * frameW, Y: 0, Width: frameW, Height: float32(tex.Height)}
+	destRec := rl.Rectangle{X: h.Position.X, Y: h.Position.Y, Width: h.Size.X * 1.5, Height: h.Size.Y * 1.5}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
-	// 1. Shadow
-	shadowOffset := rl.Vector2{X: -10, Y: h.Altitude * 1.5}
-	shadowBody := []rl.Vector2{
-		{X: center.X - 5, Y: center.Y - 12},
-		{X: center.X + 5, Y: center.Y - 12},
-		{X: center.X + 7, Y: center.Y + 2},
-		{X: center.X + 2, Y: center.Y + 16},
-		{X: center.X - 2, Y: center.Y + 16},
-		{X: center.X - 7, Y: center.Y + 2},
-	}
-	ui.DrawDropShadow(shadowBody, shadowOffset, 70)
-
-	// Shadow for rotor disc
-	rl.DrawCircle(
-		int32(center.X+shadowOffset.X),
-		int32(center.Y-3+shadowOffset.Y),
-		18.0,
-		rl.Color{R: 10, G: 20, B: 30, A: 35},
-	)
-
-	// 2. Fuselage / Body (Military Olive - FIXED CONSTANT)
-	// Tail boom
-	tailEnd := rl.Vector2{X: center.X, Y: center.Y + 16}
-	rl.DrawLineEx(rl.Vector2{X: center.X, Y: center.Y}, tailEnd, 3.5, rl.Color{R: 40, G: 50, B: 35, A: 255})
-
-	// Tail rotor
-	tailRotorY := tailEnd.Y
-	tailRotorLen := float32(math.Sin(float64(h.Age*40.0))) * 6.0
-	rl.DrawLineEx(
-		rl.Vector2{X: tailEnd.X - tailRotorLen, Y: tailRotorY},
-		rl.Vector2{X: tailEnd.X + tailRotorLen, Y: tailRotorY},
-		1.8,
-		rl.Color{R: 200, G: 210, B: 220, A: 200},
-	)
-
-	// Stub wings / weapon pylons
-	rl.DrawLineEx(
-		rl.Vector2{X: center.X - 11, Y: center.Y - 1},
-		rl.Vector2{X: center.X + 11, Y: center.Y - 1},
-		2.5,
-		rl.Color{R: 40, G: 50, B: 35, A: 255},
-	)
-	// Rocket pods on wingtips
-	rl.DrawRectangle(int32(center.X-13), int32(center.Y-3), 3, 5, rl.Color{R: 30, G: 35, B: 30, A: 255})
-	rl.DrawRectangle(int32(center.X+10), int32(center.Y-3), 3, 5, rl.Color{R: 30, G: 35, B: 30, A: 255})
-
-	fuselagePts := []rl.Vector2{
-		{X: center.X, Y: center.Y - 14}, // Nose
-		{X: center.X + 6, Y: center.Y - 8},
-		{X: center.X + 6, Y: center.Y + 4},
-		{X: center.X + 2, Y: center.Y + 8},
-		{X: center.X - 2, Y: center.Y + 8},
-		{X: center.X - 6, Y: center.Y + 4},
-		{X: center.X - 6, Y: center.Y - 8},
-	}
-	ui.DrawConvexPolygonFilled(fuselagePts, rl.Color{R: 80, G: 85, B: 90, A: 255})
-	ui.DrawThickPolygonOutline(fuselagePts, 1.2, rl.Color{R: 30, G: 32, B: 35, A: 255})
-
-	// Cockpit glass (amber/gold armored tint)
-	cockpitPts := []rl.Vector2{
-		{X: center.X, Y: center.Y - 13},
-		{X: center.X + 3.5, Y: center.Y - 7},
-		{X: center.X - 3.5, Y: center.Y - 7},
-	}
-	ui.DrawConvexPolygonFilled(cockpitPts, rl.Color{R: 220, G: 160, B: 40, A: 220})
-	rl.DrawLineEx(cockpitPts[0], cockpitPts[2], 1.2, rl.Color{R: 255, G: 200, B: 100, A: 200})
-
-	// 3. Spinning Main Rotor Blades (4 blades with motion blur disc)
-	rotorRadius := float32(20.0)
-	rotorHub := rl.Vector2{X: center.X, Y: center.Y - 3}
-
-	// Transparent rotor blur circle
-	rl.DrawCircle(int32(rotorHub.X), int32(rotorHub.Y), rotorRadius, rl.Color{R: 180, G: 200, B: 210, A: 35})
-
-	// 4 rotor blades rotating
-	for i := 0; i < 4; i++ {
-		angle := h.RotorAngle + float32(i)*(math.Pi/2.0)
-		bladeEnd := rl.Vector2{
-			X: rotorHub.X + float32(math.Cos(float64(angle)))*rotorRadius,
-			Y: rotorHub.Y + float32(math.Sin(float64(angle)))*rotorRadius,
-		}
-		rl.DrawLineEx(rotorHub, bladeEnd, 2.0, rl.Color{R: 220, G: 230, B: 240, A: 220})
-		// Blade tip highlight
-		rl.DrawCircleV(bladeEnd, 1.5, rl.Color{R: 255, G: 200, B: 50, A: 240})
-	}
-
-	// Center rotor hub cap
-	rl.DrawCircleV(rotorHub, 2.5, rl.Color{R: 20, G: 25, B: 20, A: 255})
+	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
 }

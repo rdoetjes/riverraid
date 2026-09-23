@@ -2,6 +2,7 @@ package game
 
 import (
 	"math/rand"
+	"os"
 	"time"
 
 	"riverraid/audio"
@@ -24,7 +25,7 @@ const (
 
 const (
 	DefaultScreenWidth  = 720
-	DefaultScreenHeight = 650
+	DefaultScreenHeight = 900
 	BaseScrollSpeed     = 180.0 // Pixels per second
 	MinScrollSpeed      = 120.0
 	MaxScrollSpeed      = 280.0
@@ -48,6 +49,7 @@ type Game struct {
 	Audio            *audio.SoundManager
 	HUD              *ui.HUD
 	Menu             *ui.Menu
+	Textures         map[string]rl.Texture2D
 	HighScore        int
 	ScoreForNextLife int
 	GameOverReason   string
@@ -77,12 +79,28 @@ func NewGame(width, height int32) *Game {
 		Audio:            audio.NewSoundManager(),
 		HUD:              ui.NewHUD(w, h),
 		Menu:             ui.NewMenu(w, h),
+		Textures:         make(map[string]rl.Texture2D),
 		HighScore:        0,
 		ScoreForNextLife: 10000,
 		LastCheckpointY:  0,
 	}
 
+	g.loadAllTextures()
+
 	return g
+}
+
+func (g *Game) loadAllTextures() {
+	names := []string{"player", "helicopter", "ship", "destroyer", "enemy_jet", "fuel", "sam_site", "missile", "bridge", "deco_pine", "deco_bush", "deco_house", "deco_building", "deco_rock"}
+	for _, name := range names {
+		path := "assets/sprites/" + name + ".png"
+		if _, err := os.Stat(path); err == nil {
+			tex := rl.LoadTexture(path)
+			if tex.ID > 0 {
+				g.Textures[name] = tex
+			}
+		}
+	}
 }
 
 // StartNewGame initializes fresh gameplay run.
@@ -114,8 +132,11 @@ func (g *Game) StartNewGame() {
 // RespawnPlayer puts player back at current camera position after crash.
 func (g *Game) RespawnPlayer() {
 	playerY := g.CameraY + g.ScreenHeight*0.75
-	slice := g.World.GetSliceAt(playerY)
-	playerX := slice.RiverCenter
+	left, right, hasIsland, islLeft, _ := g.World.GetRiverBoundsAt(playerY)
+	playerX := (left + right) / 2
+	if hasIsland {
+		playerX = (left + islLeft) / 2
+	}
 
 	g.Player.ResetForRespawn(rl.Vector2{X: playerX, Y: playerY})
 	g.Bullets = g.Bullets[:0]
@@ -134,5 +155,8 @@ func (g *Game) AddScreenShake(amount float32) {
 func (g *Game) Close() {
 	if g.Audio != nil {
 		g.Audio.Close()
+	}
+	for _, tex := range g.Textures {
+		rl.UnloadTexture(tex)
 	}
 }

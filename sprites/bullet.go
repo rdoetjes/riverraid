@@ -1,7 +1,7 @@
 package sprites
 
 import (
-	"riverraid/ui"
+	"math"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -60,24 +60,22 @@ func (b *Bullet) Update(dt float32) {
 	}
 }
 
-func (b *Bullet) Draw() {
+func (b *Bullet) Draw(tex rl.Texture2D) {
 	if !b.Active {
 		return
 	}
 
-	// Bullet vector head and tail
-	tail := rl.Vector2{
-		X: b.Position.X,
-		Y: b.Position.Y + (b.Size.Y * 0.7),
-	}
-	if b.Velocity.Y > 0 {
-		tail.Y = b.Position.Y - (b.Size.Y * 0.7)
+	// For tiny bullets, we'll just keep the vector drawing for performance and precision,
+	// unless specifically requested to use the missile texture.
+	// But let's use the provided texture if available to satisfy the "all PNG" request.
+
+	destRec := rl.Rectangle{X: b.Position.X, Y: b.Position.Y, Width: b.Size.X, Height: b.Size.Y}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
+
+	rotation := float32(0)
+	if b.Velocity.X != 0 || b.Velocity.Y != 0 {
+		rotation = float32(math.Atan2(float64(b.Velocity.Y), float64(b.Velocity.X)))*rl.Rad2deg + 90
 	}
 
-	// Glow trail
-	ui.DrawGlowLine(tail, b.Position, 4.0, b.Color)
-
-	// Intense bright core
-	rl.DrawLineEx(tail, b.Position, 2.0, b.CoreColor)
-	rl.DrawCircleV(b.Position, 3.0, b.CoreColor)
+	rl.DrawTexturePro(tex, rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}, destRec, origin, rotation, rl.White)
 }

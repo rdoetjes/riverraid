@@ -125,7 +125,7 @@ func (p *PlayerJet) AddFuel(amount float32) {
 	p.Refueling = true
 }
 
-func (p *PlayerJet) Draw() {
+func (p *PlayerJet) Draw(tex rl.Texture2D) {
 	if !p.Active {
 		return
 	}
@@ -137,98 +137,21 @@ func (p *PlayerJet) Draw() {
 		}
 	}
 
-	center := p.Position
-	bank := p.BankAngle // -1.0 to 1.0
-	widthFactor := float32(1.0 - math.Abs(float64(bank))*0.28)
-
-	// 1. Shadow beneath the jet (offset diagonally)
-	shadowOffset := rl.Vector2{X: -14.0 + bank*6.0, Y: p.Altitude * 1.6}
-	shadowPts := []rl.Vector2{
-		{X: center.X, Y: center.Y - 22},
-		{X: center.X + 16*widthFactor, Y: center.Y + 8},
-		{X: center.X + 8*widthFactor, Y: center.Y + 18},
-		{X: center.X - 8*widthFactor, Y: center.Y + 18},
-		{X: center.X - 16*widthFactor, Y: center.Y + 8},
+	// Map BankAngle (-1.0 to 1.0) to frame index (0 to 4)
+	frame := int(math.Round(float64(p.BankAngle*2.0 + 2.0)))
+	if frame < 0 {
+		frame = 0
 	}
-	ui.DrawDropShadow(shadowPts, shadowOffset, 75)
+	if frame > 4 {
+		frame = 4
+	}
 
-	// 2. Engine Exhaust Flames / Afterburner
-	flameLength := float32(10.0 + p.SpeedMultiplier*12.0 + float32(math.Sin(float64(p.Age*45.0)))*3.0)
-	leftNozzle := rl.Vector2{X: center.X - 5.0*widthFactor, Y: center.Y + 19.0}
-	rightNozzle := rl.Vector2{X: center.X + 5.0*widthFactor, Y: center.Y + 19.0}
+	frameW := float32(tex.Width) / 5.0
+	sourceRec := rl.Rectangle{X: float32(frame) * frameW, Y: 0, Width: frameW, Height: float32(tex.Height)}
+	destRec := rl.Rectangle{X: p.Position.X, Y: p.Position.Y, Width: p.Size.X * 1.5, Height: p.Size.Y * 1.5}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
-	// Outer fiery plume
-	rl.DrawTriangle(
-		rl.Vector2{X: leftNozzle.X - 3.0, Y: leftNozzle.Y},
-		rl.Vector2{X: leftNozzle.X + 3.0, Y: leftNozzle.Y},
-		rl.Vector2{X: leftNozzle.X, Y: leftNozzle.Y + flameLength},
-		rl.Color{R: 255, G: 140, B: 30, A: 220},
-	)
-	rl.DrawTriangle(
-		rl.Vector2{X: rightNozzle.X - 3.0, Y: rightNozzle.Y},
-		rl.Vector2{X: rightNozzle.X + 3.0, Y: rightNozzle.Y},
-		rl.Vector2{X: rightNozzle.X, Y: rightNozzle.Y + flameLength},
-		rl.Color{R: 255, G: 140, B: 30, A: 220},
-	)
-
-	// Cyan high-energy inner core
-	rl.DrawTriangle(
-		rl.Vector2{X: leftNozzle.X - 1.5, Y: leftNozzle.Y},
-		rl.Vector2{X: leftNozzle.X + 1.5, Y: leftNozzle.Y},
-		rl.Vector2{X: leftNozzle.X, Y: leftNozzle.Y + flameLength*0.6},
-		rl.Color{R: 120, G: 240, B: 255, A: 255},
-	)
-	rl.DrawTriangle(
-		rl.Vector2{X: rightNozzle.X - 1.5, Y: rightNozzle.Y},
-		rl.Vector2{X: rightNozzle.X + 1.5, Y: rightNozzle.Y},
-		rl.Vector2{X: rightNozzle.X, Y: rightNozzle.Y + flameLength*0.6},
-		rl.Color{R: 120, G: 240, B: 255, A: 255},
-	)
-
-	// 3. Main Jet Airframe (21st Century Stealth Fighter: F-22 raptor style - ABSOLUTELY CONSTANT BLUE)
-	blueCol := rl.Color{R: 0, G: 120, B: 210, A: 255}
-	borderCol := rl.Color{R: 5, G: 30, B: 60, A: 255}
-
-	nosePt := rl.Vector2{X: center.X, Y: center.Y - 24}
-	leftWingTip := rl.Vector2{X: center.X - 18.0*widthFactor - bank*4.0, Y: center.Y + 8}
-	rightWingTip := rl.Vector2{X: center.X + 18.0*widthFactor - bank*4.0, Y: center.Y + 8}
-	leftTailWing := rl.Vector2{X: center.X - 12.0*widthFactor, Y: center.Y + 19}
-	rightTailWing := rl.Vector2{X: center.X + 12.0*widthFactor, Y: center.Y + 19}
-	tailCenter := rl.Vector2{X: center.X, Y: center.Y + 17}
-
-	// Airframe (One solid blue color for all segments - ABSOLUTELY NO SHADING)
-	const (
-		cBlueR = 0
-		cBlueG = 120
-		cBlueB = 210
-	)
-	ui.DrawConvexPolygonFilled([]rl.Vector2{nosePt, leftWingTip, leftTailWing, tailCenter, rightTailWing, rightWingTip}, rl.Color{R: cBlueR, G: cBlueG, B: cBlueB, A: 255})
-
-	// Twin vertical stabilizers (rudders)
-	rudderL1 := rl.Vector2{X: center.X - 7.0*widthFactor, Y: center.Y + 10}
-	rudderL2 := rl.Vector2{X: center.X - 9.0*widthFactor, Y: center.Y + 21}
-	rudderR1 := rl.Vector2{X: center.X + 7.0*widthFactor, Y: center.Y + 10}
-	rudderR2 := rl.Vector2{X: center.X + 9.0*widthFactor, Y: center.Y + 21}
-	rl.DrawLineEx(rudderL1, rudderL2, 2.5, blueCol)
-	rl.DrawLineEx(rudderR1, rudderR2, 2.5, blueCol)
-
-	// Cockpit glass canopy (glowing tinted vector bubble)
-	cockpitTop := rl.Vector2{X: center.X, Y: center.Y - 14}
-	cockpitBottom := rl.Vector2{X: center.X, Y: center.Y - 2}
-	cockpitLeft := rl.Vector2{X: center.X - 3.0*widthFactor, Y: center.Y - 7}
-	cockpitRight := rl.Vector2{X: center.X + 3.0*widthFactor, Y: center.Y - 7}
-
-	ui.DrawConvexPolygonFilled([]rl.Vector2{cockpitTop, cockpitRight, cockpitBottom, cockpitLeft}, rl.Color{R: 20, G: 120, B: 180, A: 230})
-	// Glass specular reflection glint
-	rl.DrawLineEx(
-		rl.Vector2{X: cockpitTop.X + 0.5, Y: cockpitTop.Y + 2},
-		rl.Vector2{X: cockpitLeft.X + 1.2, Y: cockpitLeft.Y + 2},
-		1.5,
-		rl.Color{R: 200, G: 245, B: 255, A: 220},
-	)
-
-	// Stealth airframe panel outlines
-	ui.DrawThickPolygonOutline([]rl.Vector2{nosePt, rightWingTip, rightTailWing, tailCenter, leftTailWing, leftWingTip}, 1.2, borderCol)
+	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
 
 	// Refueling aura glow
 	if p.Refueling {

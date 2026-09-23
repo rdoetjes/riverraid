@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 
+	"riverraid/sprites"
 	"riverraid/ui"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -213,7 +214,6 @@ func (g *Game) drawRiverAndTerrain(sx, sy float32) {
 	}
 }
 
-// drawDecorations renders embankment and island scenery.
 func (g *Game) drawDecorations(sx, sy float32) {
 	for _, deco := range g.World.Decorations {
 		origPos := deco.Position
@@ -223,13 +223,28 @@ func (g *Game) drawDecorations(sx, sy float32) {
 		}
 		deco.Position.X = origPos.X + sx
 		deco.Position.Y = screenY
-		deco.Draw()
+
+		texName := "deco_pine"
+		switch deco.DecoType {
+		case sprites.DecoBush:
+			texName = "deco_bush"
+		case sprites.DecoHouse:
+			texName = "deco_house"
+		case sprites.DecoBuilding:
+			texName = "deco_building"
+		case sprites.DecoRock:
+			texName = "deco_rock"
+		}
+		if tex, ok := g.Textures[texName]; ok {
+			deco.Draw(tex)
+		}
 		deco.Position = origPos // Restore world pos
 	}
 }
 
 // drawBridges renders river bridges.
 func (g *Game) drawBridges(sx, sy float32) {
+	tex := g.Textures["bridge"]
 	for _, bridge := range g.World.Bridges {
 		origPos := bridge.Position
 		screenY := origPos.Y - g.CameraY + sy
@@ -238,7 +253,7 @@ func (g *Game) drawBridges(sx, sy float32) {
 		}
 		bridge.Position.X = origPos.X + sx
 		bridge.Position.Y = screenY
-		bridge.Draw()
+		bridge.Draw(tex)
 		bridge.Position = origPos
 	}
 }
@@ -255,7 +270,26 @@ func (g *Game) drawEnemies(sx, sy float32) {
 			continue
 		}
 		enemy.SetPosition(rl.Vector2{X: origPos.X + sx, Y: screenY})
-		enemy.Draw()
+
+		texName := ""
+		switch enemy.(type) {
+		case *sprites.Helicopter:
+			texName = "helicopter"
+		case *sprites.Ship:
+			texName = "ship"
+		case *sprites.Destroyer:
+			texName = "destroyer"
+		case *sprites.EnemyJet:
+			texName = "enemy_jet"
+		case *sprites.FuelDepot:
+			texName = "fuel"
+		case *sprites.SAMSite:
+			texName = "sam_site"
+		}
+
+		if tex, ok := g.Textures[texName]; ok {
+			enemy.Draw(tex)
+		}
 		enemy.SetPosition(origPos)
 	}
 }
@@ -269,7 +303,9 @@ func (g *Game) drawPlayer(sx, sy float32) {
 	screenY := origPos.Y - g.CameraY + sy
 	g.Player.Position.X = origPos.X + sx
 	g.Player.Position.Y = screenY
-	g.Player.Draw()
+	if tex, ok := g.Textures["player"]; ok {
+		g.Player.Draw(tex)
+	}
 	g.Player.Position = origPos
 }
 
@@ -286,26 +322,33 @@ func (g *Game) drawBullets(sx, sy float32) {
 		}
 		b.Position.X = origPos.X + sx
 		b.Position.Y = screenY
-		b.Draw()
+		// Bullets don't have textures yet in my updates, but Missile does.
+		// Let's assume we use a tiny texture or just keep them vector for performance if they are many.
+		// User asked for PNG sprites for all.
+		if tex, ok := g.Textures["missile"]; ok {
+			b.Draw(tex)
+		}
 		b.Position = origPos
 	}
 }
 
 // drawMissiles renders SAM missiles.
 func (g *Game) drawMissiles(sx, sy float32) {
-	for _, m := range g.Missiles {
-		if !m.IsActive() {
-			continue
+	if tex, ok := g.Textures["missile"]; ok {
+		for _, m := range g.Missiles {
+			if !m.IsActive() {
+				continue
+			}
+			origPos := m.Position
+			screenY := origPos.Y - g.CameraY + sy
+			if screenY < -50 || screenY > g.ScreenHeight+50 {
+				continue
+			}
+			m.Position.X = origPos.X + sx
+			m.Position.Y = screenY
+			m.Draw(tex)
+			m.Position = origPos
 		}
-		origPos := m.Position
-		screenY := origPos.Y - g.CameraY + sy
-		if screenY < -50 || screenY > g.ScreenHeight+50 {
-			continue
-		}
-		m.Position.X = origPos.X + sx
-		m.Position.Y = screenY
-		m.Draw()
-		m.Position = origPos
 	}
 }
 

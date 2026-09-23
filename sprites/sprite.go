@@ -31,7 +31,7 @@ type Sprite interface {
 	IsActive() bool
 	SetActive(active bool)
 	Update(dt float32)
-	Draw()
+	Draw(tex rl.Texture2D)
 }
 
 // BaseSprite provides standard fields for position, velocity, alive state, and bounding box.

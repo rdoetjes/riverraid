@@ -3,8 +3,6 @@ package sprites
 import (
 	"math"
 
-	"riverraid/ui"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -65,47 +63,18 @@ func (ej *EnemyJet) Update(dt float32) {
 	}
 }
 
-func (ej *EnemyJet) Draw() {
+func (ej *EnemyJet) Draw(tex rl.Texture2D) {
 	if !ej.Active {
 		return
 	}
 
-	center := ej.Position
-	dir := ej.Direction // 1.0 (flying right), -1.0 (flying left)
+	sourceRec := rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}
+	if ej.Direction < 0 {
+		sourceRec.Width *= -1
+	}
 
-	// 1. Drop Shadow
-	ui.DrawDropShadow([]rl.Vector2{
-		{X: center.X + dir*16, Y: center.Y},
-		{X: center.X - dir*14, Y: center.Y - 11},
-		{X: center.X - dir*14, Y: center.Y + 11},
-	}, rl.Vector2{X: -16, Y: ej.Altitude * 1.5}, 65)
+	destRec := rl.Rectangle{X: ej.Position.X, Y: ej.Position.Y, Width: ej.Size.X * 1.5, Height: ej.Size.Y * 1.5}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
-	// 2. Engine Exhaust Flame
-	flameLen := float32(12.0 + math.Sin(float64(ej.Age*50.0))*4.0)
-	tailX := center.X - dir*12
-	rl.DrawTriangle(
-		rl.Vector2{X: tailX, Y: center.Y - 3},
-		rl.Vector2{X: tailX, Y: center.Y + 3},
-		rl.Vector2{X: tailX - dir*flameLen, Y: center.Y},
-		rl.Color{R: 255, G: 120, B: 30, A: 240},
-	)
-
-	// 3. Airframe (Blue - ABSOLUTELY CONSTANT)
-	nosePt := rl.Vector2{X: center.X + dir*17, Y: center.Y}
-	leftWingPt := rl.Vector2{X: center.X - dir*12, Y: center.Y - 12}
-	rightWingPt := rl.Vector2{X: center.X - dir*12, Y: center.Y + 12}
-	tailInnerPt := rl.Vector2{X: center.X - dir*9, Y: center.Y}
-
-	ui.DrawConvexPolygonFilled([]rl.Vector2{nosePt, leftWingPt, rightWingPt}, rl.Color{R: 0, G: 120, B: 210, A: 255})
-
-	// Cockpit
-	ui.DrawConvexPolygonFilled([]rl.Vector2{
-		{X: center.X + dir*10, Y: center.Y},
-		{X: center.X + dir*2, Y: center.Y - 2.5},
-		{X: center.X - dir*4, Y: center.Y},
-		{X: center.X + dir*2, Y: center.Y + 2.5},
-	}, rl.Color{R: 20, G: 30, B: 50, A: 255})
-
-	// Outline
-	ui.DrawThickPolygonOutline([]rl.Vector2{nosePt, leftWingPt, tailInnerPt, rightWingPt}, 1.2, rl.Color{R: 5, G: 20, B: 40, A: 255})
+	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
 }

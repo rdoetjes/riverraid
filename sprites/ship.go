@@ -3,8 +3,6 @@ package sprites
 import (
 	"math"
 
-	"riverraid/ui"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -117,71 +115,18 @@ func (s *Ship) UpdateWithRiverBounds(dt float32, leftBank, rightBank float32, ha
 	}
 }
 
-func (s *Ship) Draw() {
+func (s *Ship) Draw(tex rl.Texture2D) {
 	if !s.Active {
 		return
 	}
 
-	center := s.Position
-	dir := s.Direction // 1.0 = facing right, -1.0 = facing left
-	halfW := s.Size.X / 2
-	halfH := s.Size.Y / 2
-
-	// 1. Water Wake
-	sternX := center.X - dir*halfW
-	rl.DrawTriangle(
-		rl.Vector2{X: sternX, Y: center.Y - 2},
-		rl.Vector2{X: sternX, Y: center.Y + 2},
-		rl.Vector2{X: sternX - dir*18, Y: center.Y - 5},
-		rl.Color{R: 210, G: 240, B: 255, A: 60},
-	)
-	rl.DrawTriangle(
-		rl.Vector2{X: sternX, Y: center.Y - 2},
-		rl.Vector2{X: sternX, Y: center.Y + 2},
-		rl.Vector2{X: sternX - dir*18, Y: center.Y + 5},
-		rl.Color{R: 210, G: 240, B: 255, A: 60},
-	)
-
-	// 2. Hull (Naval Grey - ABSOLUTELY CONSTANT)
-	hullPts := []rl.Vector2{
-		{X: center.X + dir*halfW, Y: center.Y},               // Bow point
-		{X: center.X + dir*(halfW-8), Y: center.Y - halfH},   // Bow top
-		{X: center.X - dir*(halfW-4), Y: center.Y - halfH},   // Stern top
-		{X: center.X - dir*halfW, Y: center.Y - (halfH - 3)}, // Stern edge
-		{X: center.X - dir*halfW, Y: center.Y + (halfH - 3)}, // Stern edge
-		{X: center.X - dir*(halfW-4), Y: center.Y + halfH},   // Stern bottom
-		{X: center.X + dir*(halfW-8), Y: center.Y + halfH},   // Bow bottom
+	sourceRec := rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}
+	if s.Direction < 0 {
+		sourceRec.Width *= -1 // Flip texture if sailing left
 	}
 
-	ui.DrawConvexPolygonFilled(hullPts, rl.Color{R: 110, G: 115, B: 120, A: 255})
-	ui.DrawThickPolygonOutline(hullPts, 1.2, rl.Color{R: 30, G: 32, B: 35, A: 255})
+	destRec := rl.Rectangle{X: s.Position.X, Y: s.Position.Y, Width: s.Size.X, Height: s.Size.Y}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
-	// 3. Superstructure
-	bridgeRec := rl.Rectangle{
-		X:      center.X - 8,
-		Y:      center.Y - 5,
-		Width:  16,
-		Height: 10,
-	}
-	rl.DrawRectangleRec(bridgeRec, rl.Color{R: 85, G: 90, B: 95, A: 255})
-	rl.DrawRectangleLinesEx(bridgeRec, 1.0, rl.Color{R: 30, G: 32, B: 35, A: 255})
-
-	// Forward Naval Gun Turret
-	turretPos := rl.Vector2{X: center.X + dir*10, Y: center.Y}
-	rl.DrawCircleV(turretPos, 3.5, rl.Color{R: 30, G: 32, B: 35, A: 255})
-	rl.DrawLineEx(turretPos, rl.Vector2{X: turretPos.X + dir*6, Y: turretPos.Y}, 2.0, rl.Color{R: 30, G: 32, B: 35, A: 255})
-
-	// Rotating Radar Mast
-	radarX := center.X - dir*2
-	rl.DrawCircle(int32(radarX), int32(center.Y), 2.5, rl.Color{R: 200, G: 215, B: 230, A: 255})
-	rl.DrawLineEx(
-		rl.Vector2{X: radarX - float32(math.Cos(float64(s.RadarAngle)))*4, Y: center.Y - float32(math.Sin(float64(s.RadarAngle)))*4},
-		rl.Vector2{X: radarX + float32(math.Cos(float64(s.RadarAngle)))*4, Y: center.Y + float32(math.Sin(float64(s.RadarAngle)))*4},
-		1.5,
-		rl.Color{R: 255, G: 190, B: 40, A: 240},
-	)
-
-	// Stern Helipad 'H' Marking
-	helipadX := center.X - dir*14
-	rl.DrawCircleLines(int32(helipadX), int32(center.Y), 4.0, rl.Color{R: 255, G: 255, B: 255, A: 120})
+	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
 }

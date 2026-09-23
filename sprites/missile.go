@@ -3,8 +3,6 @@ package sprites
 import (
 	"math"
 
-	"riverraid/ui"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -95,51 +93,14 @@ func (m *Missile) Update(dt float32) {
 	m.Position.Y += m.Velocity.Y * dt
 }
 
-func (m *Missile) Draw() {
+func (m *Missile) Draw(tex rl.Texture2D) {
 	if !m.Active {
 		return
 	}
 
-	center := m.Position
-	angle := m.CurrentAngle
-	s := float32(1.0)
+	sourceRec := rl.Rectangle{X: 0, Y: 0, Width: float32(tex.Width), Height: float32(tex.Height)}
+	destRec := rl.Rectangle{X: m.Position.X, Y: m.Position.Y, Width: m.Size.X * 1.5, Height: m.Size.Y * 1.5}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
-	// 1. Rocket Exhaust Flame
-	flicker := float32(math.Sin(float64(m.Age*30.0)))*2.0 + 4.0
-	exhaustOffset := rl.Vector2{
-		X: -float32(math.Cos(float64(angle))) * (10 + flicker),
-		Y: -float32(math.Sin(float64(angle))) * (10 + flicker),
-	}
-	ui.DrawGlowCircle(rl.Vector2Add(center, exhaustOffset), 6.0, rl.Color{R: 255, G: 160, B: 50, A: 180}, 2)
-	rl.DrawCircleV(rl.Vector2Add(center, exhaustOffset), 2.5, rl.Color{R: 255, G: 240, B: 200, A: 255})
-
-	// 2. Missile Body (Cylindrical Vector)
-	tip := rl.Vector2{
-		X: center.X + float32(math.Cos(float64(angle)))*8*s,
-		Y: center.Y + float32(math.Sin(float64(angle)))*8*s,
-	}
-	tail := rl.Vector2{
-		X: center.X - float32(math.Cos(float64(angle)))*8*s,
-		Y: center.Y - float32(math.Sin(float64(angle)))*8*s,
-	}
-
-	// Draw main shaft
-	rl.DrawLineEx(tail, tip, 2.5, rl.Color{R: 220, G: 225, B: 230, A: 255})
-
-	// Draw fins
-	finAngle := angle + math.Pi/2
-	finLen := float32(5.0)
-	f1 := rl.Vector2{
-		X: tail.X + float32(math.Cos(float64(finAngle)))*finLen,
-		Y: tail.Y + float32(math.Sin(float64(finAngle)))*finLen,
-	}
-	f2 := rl.Vector2{
-		X: tail.X - float32(math.Cos(float64(finAngle)))*finLen,
-		Y: tail.Y - float32(math.Sin(float64(finAngle)))*finLen,
-	}
-	rl.DrawLineEx(tail, f1, 1.5, rl.Color{R: 180, G: 185, B: 190, A: 255})
-	rl.DrawLineEx(tail, f2, 1.5, rl.Color{R: 180, G: 185, B: 190, A: 255})
-
-	// 3. Warhead Tip (Red)
-	rl.DrawCircleV(tip, 1.8, rl.Color{R: 255, G: 40, B: 40, A: 255})
+	rl.DrawTexturePro(tex, sourceRec, destRec, origin, m.CurrentAngle*rl.Rad2deg+90, rl.White)
 }

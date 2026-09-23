@@ -3,8 +3,6 @@ package sprites
 import (
 	"math"
 
-	"riverraid/ui"
-
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -51,55 +49,21 @@ func (s *SAMSite) Update(dt float32) {
 	}
 }
 
-func (s *SAMSite) Draw() {
+func (s *SAMSite) Draw(tex rl.Texture2D) {
 	if !s.Active {
 		return
 	}
 
-	center := s.Position
-	scl := float32(1.0)
-
-	// 1. Concrete Octagonal Base
-	baseCol := rl.Color{R: 70, G: 75, B: 80, A: 255}
-	borderCol := rl.Color{R: 40, G: 45, B: 50, A: 255}
-
-	basePts := []rl.Vector2{
-		{X: center.X - 10*scl, Y: center.Y - 16*scl},
-		{X: center.X + 10*scl, Y: center.Y - 16*scl},
-		{X: center.X + 16*scl, Y: center.Y - 10*scl},
-		{X: center.X + 16*scl, Y: center.Y + 10*scl},
-		{X: center.X + 10*scl, Y: center.Y + 16*scl},
-		{X: center.X - 10*scl, Y: center.Y + 16*scl},
-		{X: center.X - 16*scl, Y: center.Y + 10*scl},
-		{X: center.X - 16*scl, Y: center.Y - 10*scl},
-	}
-	ui.DrawConvexPolygonFilled(basePts, baseCol)
-	ui.DrawThickPolygonOutline(basePts, 1.5, borderCol)
-
-	// 2. Turret Platform
-	rl.DrawCircleV(center, 9*scl, rl.Color{R: 50, G: 55, B: 60, A: 255})
-	rl.DrawCircleLines(int32(center.X), int32(center.Y), 9*scl, borderCol)
-
-	// 3. Radar Dish (Rotating)
-	dishLen := float32(12.0)
-	p1 := rl.Vector2{
-		X: center.X - float32(math.Cos(float64(s.RadarAngle)))*dishLen,
-		Y: center.Y - float32(math.Sin(float64(s.RadarAngle)))*dishLen,
-	}
-	p2 := rl.Vector2{
-		X: center.X + float32(math.Cos(float64(s.RadarAngle)))*dishLen,
-		Y: center.Y + float32(math.Sin(float64(s.RadarAngle)))*dishLen,
-	}
-	rl.DrawLineEx(p1, p2, 3.0, rl.Color{R: 200, G: 210, B: 220, A: 255})
-
-	// Blinking status light
-	if math.Sin(float64(s.Age*10.0)) > 0 {
-		rl.DrawCircleV(center, 2.5, rl.Color{R: 255, G: 50, B: 50, A: 255})
-		ui.DrawGlowCircle(center, 6.0, rl.Color{R: 255, G: 50, B: 50, A: 150}, 2)
+	// Map RadarAngle (0..2Pi) to frame index (0..7)
+	frame := int(s.RadarAngle/(math.Pi*2.0)*8.0) % 8
+	if frame < 0 {
+		frame += 8
 	}
 
-	// 4. Missile Rails (Static indicators)
-	railCol := rl.Color{R: 30, G: 35, B: 40, A: 255}
-	rl.DrawRectangle(int32(center.X-14), int32(center.Y-4), 6, 8, railCol)
-	rl.DrawRectangle(int32(center.X+8), int32(center.Y-4), 6, 8, railCol)
+	frameW := float32(tex.Width) / 8.0
+	sourceRec := rl.Rectangle{X: float32(frame) * frameW, Y: 0, Width: frameW, Height: float32(tex.Height)}
+	destRec := rl.Rectangle{X: s.Position.X, Y: s.Position.Y, Width: s.Size.X * 1.5, Height: s.Size.Y * 1.5}
+	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
+
+	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
 }
