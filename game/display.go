@@ -87,10 +87,21 @@ func (g *Game) Draw() {
 		g.Menu.DrawPause()
 
 	case StateTitle:
-		g.Menu.DrawTitle(g.HighScore)
+		formattedScores := make([]string, len(g.HighScores))
+		for i, s := range g.HighScores {
+			formattedScores[i] = fmt.Sprintf("%2d. %-3s ........... %06d", i+1, s.Name, s.Score)
+		}
+		g.Menu.DrawTitle(g.HighScore, formattedScores)
 
 	case StateGameOver:
-		g.Menu.DrawGameOver(g.Player.Score, g.HighScore, playerSection, g.GameOverReason)
+		formattedScores := make([]string, len(g.HighScores))
+		for i, s := range g.HighScores {
+			formattedScores[i] = fmt.Sprintf("%2d. %-3s ........... %06d", i+1, s.Name, s.Score)
+		}
+		g.Menu.DrawGameOver(g.Player.Score, g.HighScore, playerSection, g.GameOverReason, formattedScores)
+
+	case StateEnteringName:
+		g.Menu.DrawNameEntry(g.Player.Score, g.EnterNameBuffer)
 	}
 
 	rl.EndDrawing()

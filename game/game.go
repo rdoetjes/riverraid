@@ -1,8 +1,10 @@
 package game
 
 import (
+	"encoding/json"
 	"math/rand"
 	"os"
+	"sort"
 	"time"
 
 	"riverraid/audio"
@@ -21,7 +23,14 @@ const (
 	StateDying
 	StatePaused
 	StateGameOver
+	StateEnteringName
 )
+
+// HighScoreEntry represents a single record in the top 10.
+type HighScoreEntry struct {
+	Name  string `json:"name"`
+	Score int    `json:"score"`
+}
 
 const (
 	DefaultScreenWidth  = 1024
@@ -51,11 +60,15 @@ type Game struct {
 	Menu             *ui.Menu
 	Textures         map[string]rl.Texture2D
 	HighScore        int
+	HighScores       []HighScoreEntry
 	ScoreForNextLife int
 	GameOverReason   string
 	LastCheckpointY  float32
 	TotalPlayTime    float32
 	RespawnTimer     float32
+	EnteringName     bool
+	EnterNameBuffer  string
+	ScoreSubmitted   bool
 }
 
 // NewGame constructs and initializes all game subsystems.
@@ -86,8 +99,56 @@ func NewGame(width, height int32) *Game {
 	}
 
 	g.loadAllTextures()
+	g.LoadHighScores()
 
 	return g
+}
+
+func (g *Game) LoadHighScores() {
+	// Initialize defaults
+	g.HighScores = make([]HighScoreEntry, 10)
+	for i := 0; i < 10; i++ {
+		g.HighScores[i] = HighScoreEntry{Name: "ACE", Score: (10 - i) * 1000}
+	}
+	g.HighScore = g.HighScores[0].Score
+
+	// Attempt to load from file
+	data, err := os.ReadFile("highscores.json")
+	if err == nil {
+		var loaded []HighScoreEntry
+		if json.Unmarshal(data, &loaded) == nil && len(loaded) > 0 {
+			g.HighScores = loaded
+			g.HighScore = g.HighScores[0].Score
+		}
+	}
+}
+
+func (g *Game) SaveHighScores() {
+	data, err := json.Marshal(g.HighScores)
+	if err == nil {
+		os.WriteFile("highscores.json", data, 0644)
+	}
+}
+
+func (g *Game) IsNewHighScore(score int) bool {
+	return score > g.HighScores[len(g.HighScores)-1].Score
+}
+
+func (g *Game) AddHighScore(name string, score int) {
+	newEntry := HighScoreEntry{Name: name, Score: score}
+	g.HighScores = append(g.HighScores, newEntry)
+
+	// Sort high to low
+	sort.Slice(g.HighScores, func(i, j int) bool {
+		return g.HighScores[i].Score > g.HighScores[j].Score
+	})
+
+	// Keep top 10
+	if len(g.HighScores) > 10 {
+		g.HighScores = g.HighScores[:10]
+	}
+	g.HighScore = g.HighScores[0].Score
+	g.SaveHighScores()
 }
 
 func (g *Game) loadAllTextures() {
@@ -127,6 +188,7 @@ func (g *Game) StartNewGame() {
 	g.State = StateDying
 	g.Player.Active = false
 	g.Player.Lives = 3
+	g.ScoreSubmitted = false
 
 	g.HUD.SetAlert("SORTIE INITIATED - GOOD LUCK PILOT", 2.5, rl.Color{R: 0, G: 240, B: 255, A: 255})
 }

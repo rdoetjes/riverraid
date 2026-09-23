@@ -2,6 +2,8 @@ package game
 
 import (
 	"math"
+	"strings"
+
 	"riverraid/audio"
 	"riverraid/sprites"
 
@@ -36,7 +38,38 @@ func (g *Game) HandleInput(dt float32) {
 
 	case StateGameOver:
 		if rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) || rl.IsMouseButtonPressed(rl.MouseLeftButton) {
-			g.StartNewGame()
+			if !g.ScoreSubmitted && g.IsNewHighScore(g.Player.Score) {
+				g.State = StateEnteringName
+				g.EnterNameBuffer = ""
+			} else {
+				g.StartNewGame()
+				g.Audio.Play(audio.SoundShoot)
+			}
+		}
+
+	case StateEnteringName:
+		// Handle text input for initials (3 letters)
+		key := rl.GetCharPressed()
+		for key > 0 {
+			if len(g.EnterNameBuffer) < 3 {
+				// Only allow uppercase A-Z
+				if key >= 65 && key <= 90 {
+					g.EnterNameBuffer += string(key)
+				} else if key >= 97 && key <= 122 {
+					g.EnterNameBuffer += strings.ToUpper(string(key))
+				}
+			}
+			key = rl.GetCharPressed()
+		}
+
+		if rl.IsKeyPressed(rl.KeyBackspace) && len(g.EnterNameBuffer) > 0 {
+			g.EnterNameBuffer = g.EnterNameBuffer[:len(g.EnterNameBuffer)-1]
+		}
+
+		if rl.IsKeyPressed(rl.KeyEnter) && len(g.EnterNameBuffer) == 3 {
+			g.AddHighScore(g.EnterNameBuffer, g.Player.Score)
+			g.ScoreSubmitted = true
+			g.State = StateGameOver
 			g.Audio.Play(audio.SoundShoot)
 		}
 	}
