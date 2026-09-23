@@ -47,7 +47,17 @@ func (g *Game) Update(dt float32) {
 				g.State = StatePlaying
 			} else {
 				g.State = StateGameOver
+				g.GameOverTimer = 10.0
 			}
+		}
+		return
+	}
+
+	if g.State == StateGameOver {
+		g.GameOverTimer -= dt
+		if g.GameOverTimer <= 0 {
+			g.State = StateTitle
+			g.Menu.Age = 0 // Reset menu animation
 		}
 		return
 	}

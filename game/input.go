@@ -70,6 +70,7 @@ func (g *Game) HandleInput(dt float32) {
 			g.AddHighScore(g.EnterNameBuffer, g.Player.Score)
 			g.ScoreSubmitted = true
 			g.State = StateGameOver
+			g.GameOverTimer = 10.0
 			g.Audio.Play(audio.SoundShoot)
 		}
 	}

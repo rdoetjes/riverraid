@@ -105,7 +105,7 @@ func (g *Game) Draw() {
 		for i, s := range g.HighScores {
 			formattedScores[i] = fmt.Sprintf("%2d. %-3s ........... %06d", i+1, s.Name, s.Score)
 		}
-		g.Menu.DrawGameOver(g.Player.Score, g.HighScore, playerSection, g.GameOverReason, formattedScores)
+		g.Menu.DrawGameOver(g.Player.Score, g.HighScore, playerSection, g.GameOverReason, formattedScores, g.GameOverTimer)
 
 	case StateEnteringName:
 		g.Menu.DrawNameEntry(g.Player.Score, g.EnterNameBuffer)

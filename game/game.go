@@ -69,6 +69,7 @@ type Game struct {
 	EnteringName     bool
 	EnterNameBuffer  string
 	ScoreSubmitted   bool
+	GameOverTimer    float32
 	WaterShader      rl.Shader
 	TimeLoc          int32
 	ResLoc           int32

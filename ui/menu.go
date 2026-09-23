@@ -155,7 +155,7 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 }
 
 // DrawGameOver renders the post-mission debrief screen.
-func (m *Menu) DrawGameOver(score, highScore, section int, reason string, formattedScores []string) {
+func (m *Menu) DrawGameOver(score, highScore, section int, reason string, formattedScores []string, autoTimer float32) {
 	rl.DrawRectangle(0, 0, int32(m.ScreenWidth), int32(m.ScreenHeight), rl.Color{R: 15, G: 8, B: 10, A: 220})
 
 	cx := m.ScreenWidth / 2
@@ -178,7 +178,12 @@ func (m *Menu) DrawGameOver(score, highScore, section int, reason string, format
 	if math.Sin(float64(m.Age*5.0)) > -0.2 {
 		restartPrompt := "PRESS SPACE OR ENTER TO CONTINUE"
 		rstSize := rl.MeasureTextEx(m.Font, restartPrompt, 18, 1)
-		rl.DrawTextEx(m.Font, restartPrompt, rl.Vector2{X: m.ScreenWidth/2 - rstSize.X/2, Y: m.ScreenHeight - 50}, 18, 1, rl.Color{R: 255, G: 240, B: 100, A: 255})
+		rl.DrawTextEx(m.Font, restartPrompt, rl.Vector2{X: m.ScreenWidth/2 - rstSize.X/2, Y: m.ScreenHeight - 65}, 18, 1, rl.Color{R: 255, G: 240, B: 100, A: 255})
+
+		// Return to title countdown
+		autoText := fmt.Sprintf("RETURNING TO HQ IN %d...", int(math.Ceil(float64(autoTimer))))
+		autoSize := rl.MeasureTextEx(m.Font, autoText, 14, 1)
+		rl.DrawTextEx(m.Font, autoText, rl.Vector2{X: m.ScreenWidth/2 - autoSize.X/2, Y: m.ScreenHeight - 35}, 14, 1, rl.Color{R: 180, G: 200, B: 220, A: 200})
 	}
 }
 
