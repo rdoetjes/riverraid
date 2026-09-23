@@ -25,7 +25,7 @@ const (
 
 const (
 	DefaultScreenWidth  = 720
-	DefaultScreenHeight = 900
+	DefaultScreenHeight = 650
 	BaseScrollSpeed     = 180.0 // Pixels per second
 	MinScrollSpeed      = 120.0
 	MaxScrollSpeed      = 280.0
