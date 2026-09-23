@@ -94,8 +94,8 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 		m.DrawHighScores(cx, cy+70, formattedScores)
 	} else {
 		// Mission / Instructions Box
-		boxW := float32(440)
-		boxH := float32(230)
+		boxW := float32(450)
+		boxH := float32(220)
 		boxRec := rl.Rectangle{X: cx - boxW/2, Y: cy + 70, Width: boxW, Height: boxH}
 		DrawBeveledRect(boxRec, 10.0, rl.Color{R: 12, G: 24, B: 36, A: 230}, rl.Color{R: 40, G: 140, B: 200, A: 200}, 1.5)
 

@@ -391,13 +391,13 @@ func (g *Game) drawDeathOverlay() {
 
 		// Warning title
 		title := "AIRCRAFT DESTROYED"
-		tW := rl.MeasureText(title, 22)
-		rl.DrawText(title, int32(cx)-tW/2, int32(boxRec.Y+18), 22, rl.Color{R: 255, G: 70, B: 60, A: 255})
+		tSize := rl.MeasureTextEx(g.MainFont, title, 22, 1)
+		rl.DrawTextEx(g.MainFont, title, rl.Vector2{X: cx - tSize.X/2, Y: boxRec.Y + 18}, 22, 1, rl.Color{R: 255, G: 70, B: 60, A: 255})
 
 		// Reason
 		if len(g.GameOverReason) > 0 {
-			rW := rl.MeasureText(g.GameOverReason, 13)
-			rl.DrawText(g.GameOverReason, int32(cx)-rW/2, int32(boxRec.Y+48), 13, rl.Color{R: 240, G: 200, B: 180, A: 230})
+			rSize := rl.MeasureTextEx(g.MainFont, g.GameOverReason, 13, 1)
+			rl.DrawTextEx(g.MainFont, g.GameOverReason, rl.Vector2{X: cx - rSize.X/2, Y: boxRec.Y + 48}, 13, 1, rl.Color{R: 240, G: 200, B: 180, A: 230})
 		}
 
 		// Countdown Timer
@@ -406,26 +406,26 @@ func (g *Game) drawDeathOverlay() {
 			secondsLeft = 1
 		}
 		countText := fmt.Sprintf("RE-ENGAGING NEXT JET IN %d...", secondsLeft)
-		cW := rl.MeasureText(countText, 18)
-		rl.DrawText(countText, int32(cx)-cW/2, int32(boxRec.Y+74), 18, rl.Color{R: 255, G: 220, B: 60, A: 255})
+		cSize := rl.MeasureTextEx(g.MainFont, countText, 18, 1)
+		rl.DrawTextEx(g.MainFont, countText, rl.Vector2{X: cx - cSize.X/2, Y: boxRec.Y + 74}, 18, 1, rl.Color{R: 255, G: 220, B: 60, A: 255})
 
 		// Reserves left
 		resText := fmt.Sprintf("RESERVES REMAINING: %d", g.Player.Lives)
-		resW := rl.MeasureText(resText, 12)
-		rl.DrawText(resText, int32(cx)-resW/2, int32(boxRec.Y+106), 12, rl.Color{R: 120, G: 210, B: 255, A: 220})
+		resSize := rl.MeasureTextEx(g.MainFont, resText, 12, 1)
+		rl.DrawTextEx(g.MainFont, resText, rl.Vector2{X: cx - resSize.X/2, Y: boxRec.Y + 106}, 12, 1, rl.Color{R: 120, G: 210, B: 255, A: 220})
 	} else {
 		ui.DrawBeveledRect(boxRec, 8.0, rl.Color{R: 30, G: 10, B: 15, A: 235}, rl.Color{R: 255, G: 30, B: 30, A: 240}, 2.0)
 
 		title := "SQUADRON DEPLETED"
-		tW := rl.MeasureText(title, 24)
-		rl.DrawText(title, int32(cx)-tW/2, int32(boxRec.Y+24), 24, rl.Color{R: 255, G: 40, B: 40, A: 255})
+		tSize := rl.MeasureTextEx(g.MainFont, title, 24, 1)
+		rl.DrawTextEx(g.MainFont, title, rl.Vector2{X: cx - tSize.X/2, Y: boxRec.Y + 24}, 24, 1, rl.Color{R: 255, G: 40, B: 40, A: 255})
 
 		sub := "ALL 3 PLANES HAVE BEEN DESTROYED"
-		sW := rl.MeasureText(sub, 14)
-		rl.DrawText(sub, int32(cx)-sW/2, int32(boxRec.Y+60), 14, rl.Color{R: 255, G: 200, B: 200, A: 240})
+		sSize := rl.MeasureTextEx(g.MainFont, sub, 14, 1)
+		rl.DrawTextEx(g.MainFont, sub, rl.Vector2{X: cx - sSize.X/2, Y: boxRec.Y + 60}, 14, 1, rl.Color{R: 255, G: 200, B: 200, A: 240})
 
 		endText := "PREPARING MISSION DEBRIEF..."
-		eW := rl.MeasureText(endText, 14)
-		rl.DrawText(endText, int32(cx)-eW/2, int32(boxRec.Y+92), 14, rl.Color{R: 255, G: 220, B: 80, A: 240})
+		eSize := rl.MeasureTextEx(g.MainFont, endText, 14, 1)
+		rl.DrawTextEx(g.MainFont, endText, rl.Vector2{X: cx - eSize.X/2, Y: boxRec.Y + 92}, 14, 1, rl.Color{R: 255, G: 220, B: 80, A: 240})
 	}
 }

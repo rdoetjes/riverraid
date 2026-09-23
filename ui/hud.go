@@ -49,27 +49,27 @@ func (h *HUD) Draw(fuel, maxFuel float32, score, highScore, lives, section int, 
 
 	// 1. Score Readout
 	scoreStr := fmt.Sprintf("%06d", score)
-	rl.DrawTextEx(h.Font, "SCORE", rl.Vector2{X: 28, Y: 16}, 11, 1, rl.Color{R: 120, G: 200, B: 255, A: 220})
-	rl.DrawTextEx(h.Font, scoreStr, rl.Vector2{X: 28, Y: 28}, 22, 1, rl.Color{R: 255, G: 255, B: 255, A: 255})
+	rl.DrawTextEx(h.Font, "SCORE", rl.Vector2{X: 28, Y: 16}, 13, 1, rl.Color{R: 120, G: 200, B: 255, A: 220})
+	rl.DrawTextEx(h.Font, scoreStr, rl.Vector2{X: 28, Y: 28}, 24, 1, rl.Color{R: 255, G: 255, B: 255, A: 255})
 
 	// 2. High Score Readout (Center)
 	highStr := fmt.Sprintf("HI: %06d", highScore)
-	hiSize := rl.MeasureTextEx(h.Font, highStr, 14, 1)
-	rl.DrawTextEx(h.Font, highStr, rl.Vector2{X: h.ScreenWidth/2 - hiSize.X/2, Y: 26}, 14, 1, rl.Color{R: 240, G: 210, B: 60, A: 240})
+	hiSize := rl.MeasureTextEx(h.Font, highStr, 16, 1)
+	rl.DrawTextEx(h.Font, highStr, rl.Vector2{X: h.ScreenWidth/2 - hiSize.X/2, Y: 26}, 16, 1, rl.Color{R: 240, G: 210, B: 60, A: 240})
 
 	// 3. Sector / Level Readout
 	sectorStr := fmt.Sprintf("ZONE %02d", section)
-	secSize := rl.MeasureTextEx(h.Font, sectorStr, 20, 1)
+	secSize := rl.MeasureTextEx(h.Font, sectorStr, 22, 1)
 	secX := h.ScreenWidth - 32 - secSize.X
-	rl.DrawTextEx(h.Font, "SECTOR", rl.Vector2{X: secX, Y: 16}, 11, 1, rl.Color{R: 120, G: 200, B: 255, A: 220})
-	rl.DrawTextEx(h.Font, sectorStr, rl.Vector2{X: secX, Y: 28}, 20, 1, rl.Color{R: 0, G: 240, B: 255, A: 255})
+	rl.DrawTextEx(h.Font, "SECTOR", rl.Vector2{X: secX, Y: 16}, 13, 1, rl.Color{R: 120, G: 200, B: 255, A: 220})
+	rl.DrawTextEx(h.Font, sectorStr, rl.Vector2{X: secX, Y: 28}, 22, 1, rl.Color{R: 0, G: 240, B: 255, A: 255})
 
 	// Bottom Instrument Dashboard
 	bottomBarRec := rl.Rectangle{X: 12, Y: h.ScreenHeight - 64, Width: h.ScreenWidth - 24, Height: 54}
 	DrawBeveledRect(bottomBarRec, 8.0, rl.Color{R: 10, G: 20, B: 30, A: 220}, rl.Color{R: 40, G: 120, B: 180, A: 200}, 1.5)
 
 	// 4. Lives Indicator (Miniature Jet Icons)
-	rl.DrawTextEx(h.Font, "RESERVES", rl.Vector2{X: 28, Y: bottomBarRec.Y + 8}, 10, 1, rl.Color{R: 120, G: 200, B: 255, A: 200})
+	rl.DrawTextEx(h.Font, "RESERVES", rl.Vector2{X: 28, Y: bottomBarRec.Y + 8}, 12, 1, rl.Color{R: 120, G: 200, B: 255, A: 200})
 	iconStartX := float32(32)
 	iconY := bottomBarRec.Y + 34
 	for i := 0; i < lives-1 && i < 6; i++ {
@@ -103,17 +103,17 @@ func (h *HUD) Draw(fuel, maxFuel float32, score, highScore, lives, section int, 
 	DrawProgressBar(fuelGaugeRec, fuelPct, fuelCol, rl.Color{R: 25, G: 30, B: 40, A: 255}, rl.Color{R: 60, G: 140, B: 200, A: 255})
 
 	// Fuel Text & Ticks
-	rl.DrawTextEx(h.Font, "E", rl.Vector2{X: fuelGaugeRec.X - 14, Y: fuelGaugeRec.Y + 2}, 14, 1, rl.Color{R: 255, G: 100, B: 100, A: 255})
-	rl.DrawTextEx(h.Font, "F", rl.Vector2{X: fuelGaugeRec.X + fuelGaugeRec.Width + 6, Y: fuelGaugeRec.Y + 2}, 14, 1, rl.Color{R: 100, G: 255, B: 150, A: 255})
+	rl.DrawTextEx(h.Font, "E", rl.Vector2{X: fuelGaugeRec.X - 16, Y: fuelGaugeRec.Y + 1}, 16, 1, rl.Color{R: 255, G: 100, B: 100, A: 255})
+	rl.DrawTextEx(h.Font, "F", rl.Vector2{X: fuelGaugeRec.X + fuelGaugeRec.Width + 6, Y: fuelGaugeRec.Y + 1}, 16, 1, rl.Color{R: 100, G: 255, B: 150, A: 255})
 	fuelLabel := fmt.Sprintf("FUEL  %3.0f%%", fuelPct*100)
-	flSize := rl.MeasureTextEx(h.Font, fuelLabel, 11, 1)
-	rl.DrawTextEx(h.Font, fuelLabel, rl.Vector2{X: h.ScreenWidth/2 - flSize.X/2, Y: bottomBarRec.Y + 7}, 11, 1, rl.Color{R: 200, G: 230, B: 255, A: 240})
+	flSize := rl.MeasureTextEx(h.Font, fuelLabel, 13, 1)
+	rl.DrawTextEx(h.Font, fuelLabel, rl.Vector2{X: h.ScreenWidth/2 - flSize.X/2, Y: bottomBarRec.Y + 6}, 13, 1, rl.Color{R: 200, G: 230, B: 255, A: 240})
 
 	// 6. Throttle / Speed Indicator
 	throttleW := float32(70)
 	throttleX := h.ScreenWidth - 28 - throttleW
 	throttleY := bottomBarRec.Y + 22
-	rl.DrawTextEx(h.Font, "THROTTLE", rl.Vector2{X: throttleX, Y: bottomBarRec.Y + 8}, 10, 1, rl.Color{R: 120, G: 200, B: 255, A: 200})
+	rl.DrawTextEx(h.Font, "THROTTLE", rl.Vector2{X: throttleX, Y: bottomBarRec.Y + 8}, 12, 1, rl.Color{R: 120, G: 200, B: 255, A: 200})
 
 	throttlePct := (speedMul - 0.65) / (1.5 - 0.65)
 	if throttlePct < 0 {

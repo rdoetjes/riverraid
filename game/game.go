@@ -239,7 +239,9 @@ func (g *Game) loadShaders() {
 func (g *Game) loadFonts() {
 	path := "assets/fonts/Army.ttf"
 	if _, err := os.Stat(path); err == nil {
-		g.MainFont = rl.LoadFont(path)
+		// Load with a larger base size for better TTF quality
+		g.MainFont = rl.LoadFontEx(path, 48, nil, 0)
+		rl.SetTextureFilter(g.MainFont.Texture, rl.FilterBilinear)
 	} else {
 		g.MainFont = rl.GetFontDefault()
 	}
