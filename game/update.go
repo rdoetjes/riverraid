@@ -80,6 +80,14 @@ func (g *Game) Update(dt float32) {
 		}
 	}
 
+	// SAM Missile active warning beep
+	if len(g.Missiles) > 0 && g.Player.IsActive() {
+		// Fast beep (3.5 times per second)
+		if int(g.TotalPlayTime*7)%2 == 0 && int((g.TotalPlayTime-dt)*7)%2 != 0 {
+			g.Audio.Play(audio.SoundMissileWarning)
+		}
+	}
+
 	// 3. Update Procedural World Generation & Culling
 	g.World.GenerateAhead(g.CameraY - g.ScreenHeight*1.8)
 	g.World.CleanupBehind(g.CameraY + g.ScreenHeight*1.2)

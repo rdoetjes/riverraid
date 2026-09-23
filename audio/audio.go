@@ -18,6 +18,7 @@ const (
 	SoundLowFuel
 	SoundExtraLife
 	SoundEngine
+	SoundMissileWarning
 	SoundCount
 )
 
@@ -92,6 +93,9 @@ func (sm *SoundManager) loadAllSounds() {
 	})
 	sm.loadSound(SoundEngine, "assets/sounds/engine.wav", func(sr int) []byte {
 		return SynthEngineHum(sr)
+	})
+	sm.loadSound(SoundMissileWarning, "assets/sounds/warning.wav", func(sr int) []byte {
+		return SynthMissileAlarm(sr)
 	})
 }
 

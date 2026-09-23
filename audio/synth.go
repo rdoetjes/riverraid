@@ -217,3 +217,36 @@ func SynthEngineHum(sampleRate int) []byte {
 
 	return GenerateWavData(samples, sampleRate)
 }
+
+// SynthMissileAlarm generates a piercing high-pitched warning buzzer.
+func SynthMissileAlarm(sampleRate int) []byte {
+	duration := 0.12
+	numSamples := int(float64(sampleRate) * duration)
+	samples := make([]int16, numSamples)
+
+	for i := 0; i < numSamples; i++ {
+		t := float64(i) / float64(sampleRate)
+		progress := t / duration
+
+		// High pitched piercing tone
+		freq := 1800.0
+		// Add a bit of frequency modulation to make it sound like a buzzer
+		if int(t*40)%2 == 0 {
+			freq = 1500.0
+		}
+
+		val := math.Sin(freq * t * 2.0 * math.Pi)
+		// Square wave for that retro buzzer feel
+		if val > 0 {
+			val = 0.5
+		} else {
+			val = -0.5
+		}
+
+		// Fast fade in/out envelope
+		amp := math.Sin(progress * math.Pi)
+		samples[i] = int16(val * amp * 18000)
+	}
+
+	return GenerateWavData(samples, sampleRate)
+}
