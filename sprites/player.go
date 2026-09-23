@@ -153,7 +153,7 @@ func (p *PlayerJet) Draw(tex rl.Texture2D) {
 	if p.BankAngle < -0.1 {
 		sourceRec.Width *= -1
 	} else if p.BankAngle > 0.1 {
-		// Normal orientation
+		sourceRec.Width *= -1
 	}
 
 	destRec := rl.Rectangle{X: p.Position.X, Y: p.Position.Y, Width: p.Size.X * 1.5, Height: p.Size.Y * 1.5}
