@@ -219,7 +219,7 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 			} else {
 				decoType = sprites.DecoBunker
 			}
-			scale := 0.85 + rng.Float32()*0.4
+			scale := 1.0 + rng.Float32()*1.2
 			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))
 		}
 	}
@@ -252,7 +252,7 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 			} else {
 				decoType = sprites.DecoBunker
 			}
-			scale := 0.85 + rng.Float32()*0.4
+			scale := 1.0 + rng.Float32()*1.5
 			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))
 		}
 	}
@@ -266,7 +266,8 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 			if rng.Float64() < 0.5 {
 				decoType = sprites.DecoBush
 			}
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, 0.8))
+			scale := 1.0 + rng.Float32()*1.5
+			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale))
 		}
 	}
 
