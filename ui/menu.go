@@ -27,24 +27,55 @@ func (m *Menu) Update(dt float32) {
 }
 
 // DrawTitle renders the main menu title screen with alternating high scores and instructions.
-func (m *Menu) DrawTitle(highScore int, formattedScores []string) {
+func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Texture2D) {
 	// Dark semi-transparent atmospheric backdrop
 	rl.DrawRectangle(0, 0, int32(m.ScreenWidth), int32(m.ScreenHeight), rl.Color{R: 8, G: 16, B: 24, A: 210})
 
 	cx := m.ScreenWidth / 2
 	cy := m.ScreenHeight * 0.28
 
-	// Vector Title: "RIVER RAID"
-	titleGlow := float32(math.Sin(float64(m.Age*3.0)))*0.2 + 0.8
-	titleCol := rl.Color{R: uint8(40 * titleGlow), G: uint8(220 * titleGlow), B: 255, A: 255}
+	if logoTex.ID > 0 {
+		// Draw Logo Texture - significantly larger
+		logoH := float32(200.0)
+		logoW := (logoH / float32(logoTex.Height)) * float32(logoTex.Width)
 
-	titleText := "RIVER RAID"
-	titleFont := int32(52)
-	tW := rl.MeasureText(titleText, titleFont)
+		// If width exceeds 80% screen width, cap it
+		maxWidth := m.ScreenWidth * 0.8
+		if logoW > maxWidth {
+			logoW = maxWidth
+			logoH = (logoW / float32(logoTex.Width)) * float32(logoTex.Height)
+		}
 
-	// Shadow/Glow text
-	rl.DrawText(titleText, int32(cx)-tW/2+2, int32(cy)-28+2, titleFont, rl.Color{R: 0, G: 60, B: 100, A: 255})
-	rl.DrawText(titleText, int32(cx)-tW/2, int32(cy)-28, titleFont, titleCol)
+		destRec := rl.Rectangle{
+			X:      cx,
+			Y:      cy - 40,
+			Width:  logoW,
+			Height: logoH,
+		}
+		origin := rl.Vector2{X: logoW / 2, Y: logoH / 2}
+
+		// Pulse the logo slightly
+		pulse := 1.0 + float32(math.Sin(float64(m.Age*2.5)))*0.04
+		destRec.Width *= pulse
+		destRec.Height *= pulse
+		origin.X *= pulse
+		origin.Y *= pulse
+
+		// Draw with White tint to preserve original PNG colors and alpha transparency
+		rl.DrawTexturePro(logoTex, rl.Rectangle{X: 0, Y: 0, Width: float32(logoTex.Width), Height: float32(logoTex.Height)}, destRec, origin, 0, rl.White)
+	} else {
+		// Fallback to Vector Title: "RIVER RAID"
+		titleGlow := float32(math.Sin(float64(m.Age*3.0)))*0.2 + 0.8
+		titleCol := rl.Color{R: uint8(40 * titleGlow), G: uint8(220 * titleGlow), B: 255, A: 255}
+
+		titleText := "RIVER RAID"
+		titleFont := int32(52)
+		tW := rl.MeasureText(titleText, titleFont)
+
+		// Shadow/Glow text
+		rl.DrawText(titleText, int32(cx)-tW/2+2, int32(cy)-28+2, titleFont, rl.Color{R: 0, G: 60, B: 100, A: 255})
+		rl.DrawText(titleText, int32(cx)-tW/2, int32(cy)-28, titleFont, titleCol)
+	}
 
 	subText := "21ST CENTURY TACTICAL STRIKE"
 	subFont := int32(14)

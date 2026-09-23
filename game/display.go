@@ -98,7 +98,7 @@ func (g *Game) Draw() {
 		for i, s := range g.HighScores {
 			formattedScores[i] = fmt.Sprintf("%2d. %-3s ........... %06d", i+1, s.Name, s.Score)
 		}
-		g.Menu.DrawTitle(g.HighScore, formattedScores)
+		g.Menu.DrawTitle(g.HighScore, formattedScores, g.Textures["logo"])
 
 	case StateGameOver:
 		formattedScores := make([]string, len(g.HighScores))

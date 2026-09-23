@@ -156,7 +156,7 @@ func (g *Game) AddHighScore(name string, score int) {
 }
 
 func (g *Game) loadAllTextures() {
-	names := []string{"player", "helicopter", "ship", "destroyer", "enemy_jet", "fuel", "sam_site", "missile", "bridge", "deco_pine", "deco_bush", "deco_house", "deco_building", "deco_rock"}
+	names := []string{"logo", "player", "helicopter", "ship", "destroyer", "enemy_jet", "fuel", "sam_site", "missile", "bridge", "deco_pine", "deco_bush", "deco_house", "deco_building", "deco_rock"}
 	for _, name := range names {
 		path := "assets/sprites/" + name + ".png"
 		if _, err := os.Stat(path); err == nil {
