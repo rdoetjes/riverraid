@@ -25,7 +25,7 @@ CGO_ENABLED ?= 1
 LDFLAGS := -s -w
 BUILD_ENV := CC=$(CC) CGO_ENABLED=$(CGO_ENABLED)
 
-.PHONY: all help build run clean test vet fmt tidy deps check package-mac
+.PHONY: all help build run clean test vet fmt tidy deps check package-mac dist
 
 all: build ## Default target: build the game executable
 
@@ -94,3 +94,27 @@ ifeq ($(OS_TYPE),macos)
 else
 	@echo "package-mac target is only supported on macOS."
 endif
+
+dist: clean ## Build and package for all platforms (macOS, Linux, Windows)
+	@echo "==> Preparing distribution packages..."
+	@mkdir -p dist/windows dist/linux dist/macos
+	
+	@echo "==> Building for Windows (amd64)..."
+	@# Note: Requires x86_64-w64-mingw32-gcc for cross-compilation
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=1 CC=x86_64-w64-mingw32-gcc $(GO) build -ldflags="$(LDFLAGS)" -o dist/windows/$(BINARY_NAME).exe . || echo "Skipping Windows build (compiler not found)"
+	@if [ -f dist/windows/$(BINARY_NAME).exe ]; then cp -r assets dist/windows/; fi
+	
+	@echo "==> Building for Linux (amd64)..."
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=1 $(GO) build -ldflags="$(LDFLAGS)" -o dist/linux/$(BINARY_NAME) . || echo "Skipping Linux build (compiler not found)"
+	@if [ -f dist/linux/$(BINARY_NAME) ]; then cp -r assets dist/linux/; fi
+	
+	@echo "==> Building for macOS (amd64)..."
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=1 $(GO) build -ldflags="$(LDFLAGS)" -o dist/macos/$(BINARY_NAME) . || echo "Skipping macOS build (compiler not found)"
+	@if [ -f dist/macos/$(BINARY_NAME) ]; then cp -r assets dist/macos/; fi
+	
+	@echo "==> Creating archives..."
+	@if [ -d dist/windows ]; then cd dist/windows && tar -czf ../riverraid-windows-amd64.tar.gz *; fi
+	@if [ -d dist/linux ]; then cd dist/linux && tar -czf ../riverraid-linux-amd64.tar.gz *; fi
+	@if [ -d dist/macos ]; then cd dist/macos && tar -czf ../riverraid-macos-amd64.tar.gz *; fi
+	
+	@echo "==> Distribution builds complete. Files are in dist/"

@@ -1,12 +1,32 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"riverraid/game"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 func main() {
+	// Change working directory to the executable's directory to ensure assets are found
+	exePath, err := os.Executable()
+	if err == nil {
+		exeDir := filepath.Dir(exePath)
+
+		// If we are inside a macOS app bundle (Contents/MacOS), move up to Resources
+		if filepath.Base(exeDir) == "MacOS" {
+			parent := filepath.Dir(exeDir)
+			if filepath.Base(parent) == "Contents" {
+				os.Chdir(filepath.Join(parent, "Resources"))
+			} else {
+				os.Chdir(exeDir)
+			}
+		} else {
+			os.Chdir(exeDir)
+		}
+	}
+
 	rl.SetConfigFlags(rl.FlagMsaa4xHint | rl.FlagVsyncHint)
 	rl.InitWindow(game.DefaultScreenWidth, game.DefaultScreenHeight, "River Raid - 21st Century Strike")
 	defer rl.CloseWindow()

@@ -73,7 +73,7 @@ func (ej *EnemyJet) Draw(tex rl.Texture2D) {
 		sourceRec.Width *= -1
 	}
 
-	destRec := rl.Rectangle{X: ej.Position.X, Y: ej.Position.Y, Width: ej.Size.X * 1.5, Height: ej.Size.Y * 1.5}
+	destRec := rl.Rectangle{X: ej.Position.X, Y: ej.Position.Y, Width: ej.Size.X * 1.5, Height: ej.Size.Y}
 	origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
 	rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
