@@ -140,9 +140,9 @@ func (pw *ProceduralWorld) sampleRiver(worldY float32) RiverSlice {
 		HasIsland:      false,
 	}
 
-	// Central island generation: Only spawn after an initial safe zone and not right at a bridge
+	// Central island generation: Only spawn after Zone 1 and not right at a bridge
 	islandFreq := math.Sin(t*3.4 + seedOffset*3.1)
-	if worldY < -1500.0 && (rightBank-leftBank) > IslandMinRiver && islandFreq > 0.35 && distToBridge > 250.0 {
+	if worldY < -SectionLength && (rightBank-leftBank) > IslandMinRiver && islandFreq > 0.35 && distToBridge > 250.0 {
 		islandWidth := float32((islandFreq - 0.35) * 1.5 * 80.0)
 		if islandWidth > (rightBank-leftBank)*0.35 {
 			islandWidth = (rightBank - leftBank) * 0.35
