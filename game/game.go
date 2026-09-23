@@ -69,6 +69,9 @@ type Game struct {
 	EnteringName     bool
 	EnterNameBuffer  string
 	ScoreSubmitted   bool
+	WaterShader      rl.Shader
+	TimeLoc          int32
+	ResLoc           int32
 }
 
 // NewGame constructs and initializes all game subsystems.
@@ -99,6 +102,7 @@ func NewGame(width, height int32) *Game {
 	}
 
 	g.loadAllTextures()
+	g.loadShaders()
 	g.LoadHighScores()
 
 	return g
@@ -215,6 +219,19 @@ func (g *Game) AddScreenShake(amount float32) {
 	}
 }
 
+func (g *Game) loadShaders() {
+	if _, err := os.Stat("assets/shaders/water.frag"); err == nil {
+		g.WaterShader = rl.LoadShader("", "assets/shaders/water.frag")
+		if g.WaterShader.ID > 0 {
+			g.TimeLoc = rl.GetShaderLocation(g.WaterShader, "time")
+			g.ResLoc = rl.GetShaderLocation(g.WaterShader, "resolution")
+
+			res := []float32{g.ScreenWidth, g.ScreenHeight}
+			rl.SetShaderValue(g.WaterShader, g.ResLoc, res, rl.ShaderUniformVec2)
+		}
+	}
+}
+
 // Close cleans up audio and resources.
 func (g *Game) Close() {
 	if g.Audio != nil {
@@ -222,5 +239,8 @@ func (g *Game) Close() {
 	}
 	for _, tex := range g.Textures {
 		rl.UnloadTexture(tex)
+	}
+	if g.WaterShader.ID > 0 {
+		rl.UnloadShader(g.WaterShader)
 	}
 }

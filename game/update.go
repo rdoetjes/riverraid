@@ -13,6 +13,12 @@ import (
 // Update orchestrates physics, collision detection, procedural spawning, and game rules.
 func (g *Game) Update(dt float32) {
 	g.TotalPlayTime += dt
+
+	// Update shader time uniform
+	if g.WaterShader.ID > 0 {
+		rl.SetShaderValue(g.WaterShader, g.TimeLoc, []float32{g.TotalPlayTime}, rl.ShaderUniformFloat)
+	}
+
 	g.HUD.Update(dt)
 	g.Menu.Update(dt)
 

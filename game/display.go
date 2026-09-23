@@ -15,8 +15,15 @@ import (
 func (g *Game) Draw() {
 	rl.BeginDrawing()
 
-	// Clear background to deep ocean blue
+	// Clear background
 	rl.ClearBackground(rl.Color{R: 15, G: 65, B: 115, A: 255})
+
+	// Render Water Shader
+	if g.WaterShader.ID > 0 {
+		rl.BeginShaderMode(g.WaterShader)
+		rl.DrawRectangle(0, 0, int32(g.ScreenWidth), int32(g.ScreenHeight), rl.White)
+		rl.EndShaderMode()
+	}
 
 	// Calculate Camera Shake Offset
 	var shakeX, shakeY float32
@@ -107,23 +114,8 @@ func (g *Game) Draw() {
 	rl.EndDrawing()
 }
 
-// drawRiverAndTerrain draws water ripples, shoreline gradients, embankments, and islands.
+// drawRiverAndTerrain draws shoreline gradients, embankments, and islands.
 func (g *Game) drawRiverAndTerrain(sx, sy float32) {
-	// Water Wave Flow Shimmer Lines
-	waveTime := float64(g.TotalPlayTime)
-	for i := 0; i < 24; i++ {
-		waveY := float32(math.Mod(float64(i)*40.0+waveTime*50.0, float64(g.ScreenHeight)))
-		waveX := float32(math.Sin(waveTime*2.0+float64(i)*1.5))*30.0 + g.ScreenWidth/2
-		waveLen := float32(40.0 + math.Sin(float64(i)*2.2)*20.0)
-
-		rl.DrawLineEx(
-			rl.Vector2{X: waveX - waveLen/2 + sx, Y: waveY + sy},
-			rl.Vector2{X: waveX + waveLen/2 + sx, Y: waveY + sy},
-			1.5,
-			rl.Color{R: 50, G: 140, B: 200, A: 60},
-		)
-	}
-
 	slices := g.World.ActiveSlices
 	if len(slices) < 2 {
 		return
