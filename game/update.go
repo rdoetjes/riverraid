@@ -238,7 +238,16 @@ func (g *Game) updateEnemies(dt float32) {
 		case *sprites.Helicopter:
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
 		case *sprites.Destroyer:
-			e.UpdateWithHunterLogic(dt, g.Player.Position, leftBank, rightBank, hasIsland, islLeft, islRight)
+			// Find the bridge "behind" the destroyer (the one it would hit if it sailed down-river)
+			// Bridges are at -3600, -7200, etc. Destroyer sails towards more positive Y.
+			limitY := float32(1000.0) // Default limit (starting runway)
+			for _, b := range g.World.Bridges {
+				// We want the bridge with the smallest Y that is still > e.Position.Y
+				if b.Position.Y > e.Position.Y && b.Position.Y < limitY {
+					limitY = b.Position.Y
+				}
+			}
+			e.UpdateWithHunterLogic(dt, g.Player.Position, leftBank, rightBank, hasIsland, islLeft, islRight, limitY)
 			// Destroyer Firing Logic: Shoot until player passes
 			if e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
 				dist := rl.Vector2Distance(e.Position, g.Player.Position)
@@ -400,6 +409,11 @@ func (g *Game) checkPlayerBulletVsEnemies(bullet *sprites.Bullet, bulletBounds r
 }
 
 func (g *Game) checkBulletVsMissiles(bullet *sprites.Bullet, bulletBounds rl.Rectangle) {
+	// Only player bullets can destroy missiles
+	if !bullet.IsPlayerBullet {
+		return
+	}
+
 	for _, missile := range g.Missiles {
 		if !missile.IsActive() {
 			continue
@@ -415,31 +429,52 @@ func (g *Game) checkBulletVsMissiles(bullet *sprites.Bullet, bulletBounds rl.Rec
 }
 
 func (g *Game) checkBulletVsBridges(bullet *sprites.Bullet, bulletBounds rl.Rectangle) {
+	// Only player bullets can destroy bridges
+	if !bullet.IsPlayerBullet {
+		return
+	}
+
 	for _, bridge := range g.World.Bridges {
 		if !bridge.IsActive() || bridge.Destroyed {
 			continue
 		}
+
+		// Ensure the bridge is on-screen (in sight) for hits to register
+		if bridge.Position.Y < g.CameraY || bridge.Position.Y > g.CameraY+g.ScreenHeight {
+			continue
+		}
+
 		bridgeHitbox := rl.Rectangle{
 			X:      bridge.LeftBankX,
 			Y:      bridge.Position.Y - 16,
 			Width:  bridge.RightBankX - bridge.LeftBankX,
 			Height: 32,
 		}
+
 		if rl.CheckCollisionRecs(bulletBounds, bridgeHitbox) {
 			bullet.SetActive(false)
-			bridge.Destroy()
-			g.Player.Score += bridge.ScoreValue
+			bridge.Health--
 
-			g.Audio.Play(audio.SoundBigExplosion)
-			g.AddScreenShake(9.0)
+			if bridge.Health <= 0 {
+				bridge.Destroy()
+				g.Player.Score += bridge.ScoreValue
 
-			midPos := bridge.GetPosition()
-			g.Particles.AddExplosion(midPos, true)
-			g.Particles.AddExplosion(rl.Vector2{X: midPos.X - 40, Y: midPos.Y}, false)
-			g.Particles.AddExplosion(rl.Vector2{X: midPos.X + 40, Y: midPos.Y}, false)
+				g.Audio.Play(audio.SoundBigExplosion)
+				g.AddScreenShake(9.0)
 
-			alertMsg := fmt.Sprintf("SECTOR %02d SECURED - +500 PTS", bridge.SectionIndex)
-			g.HUD.SetAlert(alertMsg, 3.0, rl.Color{R: 0, G: 255, B: 200, A: 255})
+				midPos := bridge.GetPosition()
+				g.Particles.AddExplosion(midPos, true)
+				g.Particles.AddExplosion(rl.Vector2{X: midPos.X - 40, Y: midPos.Y}, false)
+				g.Particles.AddExplosion(rl.Vector2{X: midPos.X + 40, Y: midPos.Y}, false)
+
+				alertMsg := fmt.Sprintf("SECTOR %02d SECURED - +500 PTS", bridge.SectionIndex)
+				g.HUD.SetAlert(alertMsg, 3.0, rl.Color{R: 0, G: 255, B: 200, A: 255})
+			} else {
+				// Flash or feedback for hit
+				g.Audio.Play(audio.SoundExplosion)
+				g.AddScreenShake(2.0)
+				g.Particles.AddExplosion(bullet.Position, false)
+			}
 			break
 		}
 	}

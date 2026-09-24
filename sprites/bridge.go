@@ -28,8 +28,8 @@ func NewBridge(posY float32, leftX float32, rightX float32, sectionIndex int) *B
 			Velocity:  rl.Vector2{X: 0, Y: 0},
 			Size:      rl.Vector2{X: width, Y: 32},
 			Active:    true,
-			Health:    1,
-			MaxHealth: 1,
+			Health:    5,
+			MaxHealth: 5,
 		},
 		LeftBankX:    leftX,
 		RightBankX:   rightX,
@@ -87,7 +87,13 @@ func (b *Bridge) Draw(tex rl.Texture2D) {
 		destRec := rl.Rectangle{X: b.Position.X, Y: b.Position.Y, Width: b.Size.X, Height: b.Size.Y}
 		origin := rl.Vector2{X: destRec.Width / 2, Y: destRec.Height / 2}
 
-		rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, rl.White)
+		// Flash red based on health remaining
+		tint := rl.White
+		if b.Health < b.MaxHealth && int(b.Age*10)%2 == 0 {
+			tint = rl.Red
+		}
+
+		rl.DrawTexturePro(tex, sourceRec, destRec, origin, 0, tint)
 
 		// Simple vehicle box
 		rl.DrawRectangle(int32(b.VehicleX-9), int32(b.Position.Y-4), 18, 9, rl.Color{R: 75, G: 90, B: 65, A: 255})

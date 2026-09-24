@@ -55,7 +55,7 @@ func (b *Bullet) Update(dt float32) {
 	b.Age += dt
 
 	// Lifetime safety cutoff
-	if b.Age > 3.0 {
+	if b.Age > 1.8 {
 		b.Active = false
 	}
 }

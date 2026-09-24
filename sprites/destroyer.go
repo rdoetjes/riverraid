@@ -57,7 +57,7 @@ func (d *Destroyer) Update(dt float32) {
 }
 
 // UpdateWithHunterLogic moves the destroyer laterally to hunt the player and vertically to sail down the river.
-func (d *Destroyer) UpdateWithHunterLogic(dt float32, playerPos rl.Vector2, leftBank, rightBank float32, hasIsland bool, islLeft, islRight float32) {
+func (d *Destroyer) UpdateWithHunterLogic(dt float32, playerPos rl.Vector2, leftBank, rightBank float32, hasIsland bool, islLeft, islRight float32, limitY float32) {
 	if !d.Active {
 		return
 	}
@@ -80,9 +80,16 @@ func (d *Destroyer) UpdateWithHunterLogic(dt float32, playerPos rl.Vector2, left
 	}
 
 	// 2. Vertical "Sailing Down" Logic
-	// Sail down relative to the world at a steady pace
+	// Sail down relative to the world at a steady pace, but stop at bridges
 	d.Velocity.Y = 90.0 // Constant speed sailing "down-river" aggressively
-	d.Position.Y += d.Velocity.Y * dt
+	newY := d.Position.Y + d.Velocity.Y*dt
+
+	// Stop at bridge limit (with a small margin so it doesn't overlap visually)
+	if newY > limitY-40.0 {
+		newY = limitY - 40.0
+		d.Velocity.Y = 0
+	}
+	d.Position.Y = newY
 
 	// 3. Boundary avoidance (Stay in water)
 	halfW := d.Size.X / 2.0
