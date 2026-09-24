@@ -166,8 +166,9 @@ func (g *Game) Update(dt float32) {
 		}
 		b.Update(dt)
 
-		// Cull bullet if scrolled off camera
-		if b.Position.Y < g.CameraY-100 || b.Position.Y > g.CameraY+g.ScreenHeight+100 {
+		// Cull bullet if scrolled off camera (including diagonal shots leaving the sides)
+		if b.Position.Y < g.CameraY-50 || b.Position.Y > g.CameraY+g.ScreenHeight+50 ||
+			b.Position.X < -50 || b.Position.X > g.ScreenWidth+50 {
 			b.SetActive(false)
 			continue
 		}

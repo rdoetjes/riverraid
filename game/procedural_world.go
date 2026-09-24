@@ -13,7 +13,7 @@ const (
 	SliceStep      = 20.0   // Vertical distance between river mesh sample points
 	SectionLength  = 3600.0 // Distance between consecutive bridges
 	RiverMinWidth  = 80.0
-	RiverMaxWidth  = 440.0
+	RiverMaxWidth  = 480.0
 	IslandMinRiver = 340.0 // River must be at least this wide for an island to spawn
 )
 
