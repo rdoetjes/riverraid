@@ -238,12 +238,12 @@ func (g *Game) updateEnemies(dt float32) {
 		case *sprites.Helicopter:
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
 		case *sprites.Destroyer:
-			// Find the bridge "behind" the destroyer (the one it would hit if it sailed down-river)
+			// Find the nearest undestroyed bridge "behind" the destroyer (the one it would hit if it sailed down-river)
 			// Bridges are at -3600, -7200, etc. Destroyer sails towards more positive Y.
-			limitY := float32(1000.0) // Default limit (starting runway)
+			limitY := float32(2000.0) // Default limit well behind the start
 			for _, b := range g.World.Bridges {
-				// We want the bridge with the smallest Y that is still > e.Position.Y
-				if b.Position.Y > e.Position.Y && b.Position.Y < limitY {
+				// Only undestroyed bridges act as physical barriers
+				if !b.Destroyed && b.Position.Y > e.Position.Y && b.Position.Y < limitY {
 					limitY = b.Position.Y
 				}
 			}

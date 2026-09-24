@@ -87,7 +87,6 @@ func (pw *ProceduralWorld) sampleRiver(worldY float32) RiverSlice {
 	}
 
 	// Near bridge locations, straighten and widen river cleanly (analytical bridge position)
-	// Safety: No bridge straightening for the starting runway (worldY > 0)
 	distToBridge := float32(1000.0)
 	if worldY < -500.0 {
 		nearestBridgeIdx := math.Round(float64(-worldY) / SectionLength)
@@ -114,8 +113,7 @@ func (pw *ProceduralWorld) sampleRiver(worldY float32) RiverSlice {
 		if worldY < 0 {
 			safeBlend = (worldY + 1200.0) / 1200.0 // Fade out safety over 1200px
 		}
-		// Force wide and centered
-		centerX = (pw.ScreenWidth/2.0)*(1.0-safeBlend) + (pw.ScreenWidth/2.0)*safeBlend
+		centerX = (pw.ScreenWidth / 2.0)
 		halfWidth = halfWidth*(1.0-safeBlend) + (RiverMaxWidth*0.85)*safeBlend
 	}
 
@@ -191,186 +189,171 @@ func (pw *ProceduralWorld) spawnSliceEntities(slice RiverSlice) {
 	rng := rand.New(rand.NewSource(int64(math.Abs(float64(slice.WorldY)))*1000 + pw.Seed))
 	section := pw.GetSectionAt(slice.WorldY)
 
-	// 1. Terrain Decorations on Left and Right Embankments
+	pw.spawnBankDecorations(slice, rng, section)
+	pw.spawnIslandDecorations(slice, rng)
+	pw.spawnActiveEntities(slice, rng, section)
+}
+
+func (pw *ProceduralWorld) spawnBankDecorations(slice RiverSlice, rng *rand.Rand, section int) {
+	// 1. Left Bank
 	if rng.Float64() < 0.45 {
-		// Left bank decoration
 		decoX := rng.Float32() * (slice.LeftBankX - 15.0)
 		if decoX > 10 {
-			decoType := sprites.DecoPineTree
-			roll := rng.Float64()
-			if roll < 0.25 {
-				decoType = sprites.DecoPineTree
-			} else if roll < 0.45 {
-				decoType = sprites.DecoDeciduousTree
-			} else if roll < 0.65 {
-				decoType = sprites.DecoBush
-			} else if roll < 0.75 {
-				decoType = sprites.DecoHouse
-			} else if roll < 0.82 {
-				decoType = sprites.DecoBuilding
-			} else if roll < 0.92 {
-				decoType = sprites.DecoRock
-			} else if roll < 0.95 {
-				decoType = sprites.DecoRadarStation
-			} else if roll < 0.97 && section >= 5 {
-				// SAM Site spawn on left bank - from Level 5 onwards (~2 per section per bank)
-				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
-				return
-			} else {
-				decoType = sprites.DecoBunker
-			}
-			scale := 1.0 + rng.Float32()*1.5
-			rotation := float32(rng.Intn(4) * 90)
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
+			pw.createDecorationOrSAM(decoX, slice.WorldY, rng, section)
 		}
 	}
 
+	// 2. Right Bank
 	if rng.Float64() < 0.45 {
-		// Right bank decoration
 		margin := pw.ScreenWidth - slice.RightBankX
 		if margin > 20 {
 			decoX := slice.RightBankX + 15.0 + rng.Float32()*(margin-25.0)
-			decoType := sprites.DecoPineTree
-			roll := rng.Float64()
-			if roll < 0.25 {
-				decoType = sprites.DecoPineTree
-			} else if roll < 0.45 {
-				decoType = sprites.DecoDeciduousTree
-			} else if roll < 0.65 {
-				decoType = sprites.DecoBush
-			} else if roll < 0.75 {
-				decoType = sprites.DecoHouse
-			} else if roll < 0.82 {
-				decoType = sprites.DecoBuilding
-			} else if roll < 0.92 {
-				decoType = sprites.DecoRock
-			} else if roll < 0.95 {
-				decoType = sprites.DecoRadarStation
-			} else if roll < 0.97 && section >= 5 {
-				// SAM Site spawn on right bank - from Level 5 onwards (~2 per section per bank)
-				pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: decoX, Y: slice.WorldY}))
-				return
-			} else {
-				decoType = sprites.DecoBunker
-			}
-			scale := 1.0 + rng.Float32()*1.5
-			rotation := float32(rng.Intn(4) * 90)
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
+			pw.createDecorationOrSAM(decoX, slice.WorldY, rng, section)
 		}
 	}
+}
 
-	// 2. Island Decorations
-	if slice.HasIsland && rng.Float64() < 0.55 {
-		islandWidth := slice.IslandRightX - slice.IslandLeftX
-		if islandWidth > 20 {
-			decoX := slice.IslandLeftX + 5.0 + rng.Float32()*(islandWidth-10.0)
-			decoType := sprites.DecoPineTree
-			if rng.Float64() < 0.5 {
-				decoType = sprites.DecoBush
-			}
-			scale := 1.0 + rng.Float32()*1.5
-			rotation := float32(rng.Intn(4) * 90)
-			pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
-		}
+func (pw *ProceduralWorld) createDecorationOrSAM(x, y float32, rng *rand.Rand, section int) {
+	roll := rng.Float64()
+
+	// Special case: SAM Sites spawn from Section 5 onwards
+	if roll < 0.03 && section >= 5 {
+		pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: x, Y: y}))
+		return
 	}
 
-	// 3. Spawning Enemies and Fuel Stations (spaced periodically)
+	// Standard Decorations
+	decoType := sprites.DecoPineTree
+	if roll < 0.25 {
+		decoType = sprites.DecoPineTree
+	} else if roll < 0.45 {
+		decoType = sprites.DecoDeciduousTree
+	} else if roll < 0.65 {
+		decoType = sprites.DecoBush
+	} else if roll < 0.75 {
+		decoType = sprites.DecoHouse
+	} else if roll < 0.82 {
+		decoType = sprites.DecoBuilding
+	} else if roll < 0.92 {
+		decoType = sprites.DecoRock
+	} else if roll < 0.95 {
+		decoType = sprites.DecoRadarStation
+	} else {
+		decoType = sprites.DecoBunker
+	}
+
+	scale := 1.0 + rng.Float32()*1.5
+	rotation := float32(rng.Intn(4) * 90)
+	pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: x, Y: y}, decoType, scale, rotation))
+}
+
+func (pw *ProceduralWorld) spawnIslandDecorations(slice RiverSlice, rng *rand.Rand) {
+	if !slice.HasIsland || rng.Float64() >= 0.55 {
+		return
+	}
+
+	islandWidth := slice.IslandRightX - slice.IslandLeftX
+	if islandWidth > 20 {
+		decoX := slice.IslandLeftX + 5.0 + rng.Float32()*(islandWidth-10.0)
+		decoType := sprites.DecoPineTree
+		if rng.Float64() < 0.5 {
+			decoType = sprites.DecoBush
+		}
+		scale := 1.0 + rng.Float32()*1.5
+		rotation := float32(rng.Intn(4) * 90)
+		pw.Decorations = append(pw.Decorations, sprites.NewTerrainDecoration(rl.Vector2{X: decoX, Y: slice.WorldY}, decoType, scale, rotation))
+	}
+}
+
+func (pw *ProceduralWorld) spawnActiveEntities(slice RiverSlice, rng *rand.Rand, section int) {
 	// Don't spawn right on top of a bridge
 	distToBridge := float32(math.Abs(float64(slice.WorldY - pw.NextBridgeY)))
 	if distToBridge < 180.0 {
 		return
 	}
 
-	// Spawn density check: Higher density (every 110 pixels instead of 160)
+	// Periodic density check
 	yInt := int(math.Abs(float64(slice.WorldY)))
-	if yInt%110 < int(SliceStep) {
-		spawnRoll := rng.Float64()
+	if yInt%110 >= int(SliceStep) {
+		return
+	}
 
-		if spawnRoll < 0.22 {
-			// Fuel Depot spawn
-			var fuelX float32
-			if slice.HasIsland {
-				// Put in left or right channel
-				if rng.Float64() < 0.5 {
-					fuelX = (slice.LeftBankX + slice.IslandLeftX) / 2.0
-				} else {
-					fuelX = (slice.IslandRightX + slice.RightBankX) / 2.0
-				}
-			} else {
-				fuelX = slice.RiverCenter + (rng.Float32()-0.5)*(slice.RiverHalfWidth*0.7)
-			}
-			pw.Enemies = append(pw.Enemies, sprites.NewFuelDepot(rl.Vector2{X: fuelX, Y: slice.WorldY}))
+	spawnRoll := rng.Float64()
 
-		} else if spawnRoll < 0.45 {
-			// Helicopter spawn
-			minX := slice.LeftBankX + 20
-			maxX := slice.RightBankX - 20
-			if slice.HasIsland {
-				if rng.Float64() < 0.5 {
-					minX = slice.LeftBankX + 15
-					maxX = slice.IslandLeftX - 15
-				} else {
-					minX = slice.IslandRightX + 15
-					maxX = slice.RightBankX - 15
-				}
-			}
-			if maxX > minX+30 {
-				posX := minX + rng.Float32()*(maxX-minX)
-				speed := float32(40.0 + rng.Float64()*45.0 + float64(section)*4.0)
-				pw.Enemies = append(pw.Enemies, sprites.NewHelicopter(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-			}
+	if spawnRoll < 0.22 {
+		pw.spawnFuelDepot(slice, rng)
+	} else if spawnRoll < 0.45 {
+		pw.spawnHelicopter(slice, rng, section)
+	} else if spawnRoll < 0.70 {
+		pw.spawnShipOrDestroyer(slice, rng, section)
+	} else {
+		pw.spawnEnemyJet(slice, rng, section)
+	}
+}
 
-		} else if spawnRoll < 0.70 {
-			// Ship / Destroyer slot
-			minX := slice.LeftBankX + 25
-			maxX := slice.RightBankX - 25
-			if slice.HasIsland {
-				if rng.Float64() < 0.5 {
-					minX, maxX = slice.LeftBankX+22, slice.IslandLeftX-22
-				} else {
-					minX, maxX = slice.IslandRightX+22, slice.RightBankX-22
-				}
-			}
-
-			// Frequency Control: Targeting ~3 destroyers per 3600-pixel section
-			// 3600 / 110 (spawn window) = ~32 windows. 3 / 32 = ~9% total probability.
-			if section >= 3 && spawnRoll < 0.54 { // 0.54 - 0.45 = 0.09 (9%)
-				if maxX > minX+30 {
-					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(60.0 + float64(section)*4.0)
-					pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-				}
-			} else {
-				// Standard Ship
-				if maxX > minX+35 {
-					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(25.0 + rng.Float64()*30.0)
-					pw.Enemies = append(pw.Enemies, sprites.NewShip(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-				}
-			}
-
-		} else if spawnRoll < 0.95 {
-			// Fast Interceptor Jet
-			minX := slice.LeftBankX + 15
-			maxX := slice.RightBankX - 15
-			if maxX > minX+50 {
-				posX := minX + rng.Float32()*(maxX-minX)
-				speed := float32(110.0 + rng.Float64()*60.0 + float64(section)*8.0)
-				pw.Enemies = append(pw.Enemies, sprites.NewEnemyJet(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-			}
+func (pw *ProceduralWorld) spawnFuelDepot(slice RiverSlice, rng *rand.Rand) {
+	var fuelX float32
+	if slice.HasIsland {
+		if rng.Float64() < 0.5 {
+			fuelX = (slice.LeftBankX + slice.IslandLeftX) / 2.0
 		} else {
-			// Extra filler slot (Decoration or Jet)
-			if rng.Float64() < 0.5 {
-				minX := slice.LeftBankX + 15
-				maxX := slice.RightBankX - 15
-				if maxX > minX+50 {
-					posX := minX + rng.Float32()*(maxX-minX)
-					speed := float32(110.0 + rng.Float64()*60.0 + float64(section)*8.0)
-					pw.Enemies = append(pw.Enemies, sprites.NewEnemyJet(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
-				}
-			}
+			fuelX = (slice.IslandRightX + slice.RightBankX) / 2.0
+		}
+	} else {
+		fuelX = slice.RiverCenter + (rng.Float32()-0.5)*(slice.RiverHalfWidth*0.7)
+	}
+	pw.Enemies = append(pw.Enemies, sprites.NewFuelDepot(rl.Vector2{X: fuelX, Y: slice.WorldY}))
+}
+
+func (pw *ProceduralWorld) spawnHelicopter(slice RiverSlice, rng *rand.Rand, section int) {
+	minX, maxX := pw.getChannelBounds(slice, rng, 20, 15)
+	if maxX > minX+30 {
+		posX := minX + rng.Float32()*(maxX-minX)
+		speed := float32(40.0 + rng.Float64()*45.0 + float64(section)*4.0)
+		pw.Enemies = append(pw.Enemies, sprites.NewHelicopter(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
+	}
+}
+
+func (pw *ProceduralWorld) spawnShipOrDestroyer(slice RiverSlice, rng *rand.Rand, section int) {
+	minX, maxX := pw.getChannelBounds(slice, rng, 25, 22)
+
+	// Frequency Control: Targeting ~3 destroyers per 3600-pixel section
+	if section >= 3 && rng.Float64() < 0.35 {
+		if maxX > minX+30 {
+			posX := minX + rng.Float32()*(maxX-minX)
+			speed := float32(60.0 + float64(section)*4.0)
+			pw.Enemies = append(pw.Enemies, sprites.NewDestroyer(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
+		}
+	} else {
+		if maxX > minX+35 {
+			posX := minX + rng.Float32()*(maxX-minX)
+			speed := float32(25.0 + rng.Float64()*30.0)
+			pw.Enemies = append(pw.Enemies, sprites.NewShip(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 		}
 	}
+}
+
+func (pw *ProceduralWorld) spawnEnemyJet(slice RiverSlice, rng *rand.Rand, section int) {
+	minX := slice.LeftBankX + 15
+	maxX := slice.RightBankX - 15
+	if maxX > minX+50 {
+		posX := minX + rng.Float32()*(maxX-minX)
+		speed := float32(110.0 + rng.Float64()*60.0 + float64(section)*8.0)
+		pw.Enemies = append(pw.Enemies, sprites.NewEnemyJet(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
+	}
+}
+
+func (pw *ProceduralWorld) getChannelBounds(slice RiverSlice, rng *rand.Rand, marginNormal, marginIsland float32) (float32, float32) {
+	minX := slice.LeftBankX + marginNormal
+	maxX := slice.RightBankX - marginNormal
+	if slice.HasIsland {
+		if rng.Float64() < 0.5 {
+			maxX = slice.IslandLeftX - marginIsland
+		} else {
+			minX = slice.IslandRightX + marginIsland
+		}
+	}
+	return minX, maxX
 }
 
 // CleanupBehind removes world slices and objects that have scrolled far behind the camera.
