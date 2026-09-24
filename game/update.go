@@ -321,12 +321,11 @@ func (g *Game) checkCollisions(dt float32) {
 		return
 	}
 
-	g.checkRefuelingCollisions(dt)
-
 	if g.Player.InvincibleTimer > 0 {
 		return
 	}
 
+	g.checkRefuelingCollisions(dt)
 	g.checkEnemyCrashCollisions(playerHitbox)
 	g.checkMissileCrashCollisions(playerHitbox)
 	g.checkBridgeCrashCollisions(playerHitbox)
