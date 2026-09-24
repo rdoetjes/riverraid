@@ -64,7 +64,7 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 		origin.Y *= pulse
 
 		// Draw with White tint to preserve original PNG colors and alpha transparency
-		rl.DrawTexturePro(logoTex, rl.Rectangle{X: 0, Y: 0, Width: float32(logoTex.Width), Height: float32(logoTex.Height)}, destRec, origin, 0, rl.White)
+		rl.DrawTexturePro(logoTex, rl.Rectangle{X: 0, Y: -40, Width: float32(logoTex.Width), Height: float32(logoTex.Height)}, destRec, origin, 0, rl.White)
 	} else {
 		// Fallback to Vector Title: "RIVER RAID"
 		titleGlow := float32(math.Sin(float64(m.Age*3.0)))*0.2 + 0.8
@@ -82,7 +82,7 @@ func (m *Menu) DrawTitle(highScore int, formattedScores []string, logoTex rl.Tex
 	subText := "21ST CENTURY TACTICAL STRIKE"
 	subFont := float32(14)
 	subSize := rl.MeasureTextEx(m.Font, subText, subFont, 1)
-	rl.DrawTextEx(m.Font, subText, rl.Vector2{X: m.ScreenWidth/2 - subSize.X/2, Y: cy + 32}, subFont, 1, rl.Color{R: 240, G: 200, B: 50, A: 240})
+	rl.DrawTextEx(m.Font, subText, rl.Vector2{X: m.ScreenWidth/2 - subSize.X/2, Y: cy + 48}, subFont, 1, rl.Color{R: 240, G: 200, B: 50, A: 240})
 
 	// Cycle logic: 5s High Scores, 5s Instructions = 10s period
 	period := float32(10.0)
