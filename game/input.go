@@ -124,8 +124,10 @@ func (g *Game) handleCombatControls(dt float32) {
 	// Limit player to maximum 3 bullets on screen
 	playerBulletCount := 0
 	for _, b := range g.Bullets {
-		if b.IsPlayerBullet && b.Active {
-			playerBulletCount++
+		if bullet, ok := b.(*sprites.Bullet); ok {
+			if bullet.IsPlayerBullet && bullet.IsActive() {
+				playerBulletCount++
+			}
 		}
 	}
 

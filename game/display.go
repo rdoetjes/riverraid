@@ -320,20 +320,19 @@ func (g *Game) drawBullets(sx, sy float32) {
 		if !b.IsActive() {
 			continue
 		}
-		origPos := b.Position
+		origPos := b.GetPosition()
 		screenY := origPos.Y - g.CameraY + sy
 		if screenY < -30 || screenY > g.ScreenHeight+30 {
 			continue
 		}
-		b.Position.X = origPos.X + sx
-		b.Position.Y = screenY
+		b.SetPosition(rl.Vector2{X: origPos.X + sx, Y: screenY})
 		// Bullets don't have textures yet in my updates, but Missile does.
 		// Let's assume we use a tiny texture or just keep them vector for performance if they are many.
 		// User asked for PNG sprites for all.
 		if tex, ok := g.Textures["missile"]; ok {
 			b.Draw(tex)
 		}
-		b.Position = origPos
+		b.SetPosition(origPos)
 	}
 }
 

@@ -46,6 +46,14 @@ func (b *Bullet) GetType() SpriteType {
 	return TypeBullet
 }
 
+func (b *Bullet) SetPosition(pos rl.Vector2) {
+	b.Position = pos
+}
+
+func (b *Bullet) SetActive(active bool) {
+	b.Active = active
+}
+
 func (b *Bullet) Update(dt float32) {
 	if !b.Active {
 		return

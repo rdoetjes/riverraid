@@ -349,11 +349,17 @@ func (g *Game) checkCollisions(dt float32) {
 
 // checkBulletCollisions tests projecticles against units, missiles, and bridges.
 func (g *Game) checkBulletCollisions(playerHitbox rl.Rectangle) {
-	for _, bullet := range g.Bullets {
-		if !bullet.IsActive() {
+	for _, b := range g.Bullets {
+		if !b.IsActive() {
 			continue
 		}
-		bulletBounds := bullet.GetBounds()
+		bulletBounds := b.GetBounds()
+
+		// Get bullet type if we need specific fields
+		bullet, isBullet := b.(*sprites.Bullet)
+		if !isBullet {
+			continue
+		}
 
 		// 1. Player Bullets vs Enemies
 		if bullet.IsPlayerBullet {

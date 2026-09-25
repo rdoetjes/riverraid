@@ -52,7 +52,7 @@ type Game struct {
 	ScreenShake      float32
 	World            *ProceduralWorld
 	Player           *sprites.PlayerJet
-	Bullets          []*sprites.Bullet
+	Bullets          []sprites.Sprite
 	Missiles         []sprites.Sprite
 	Particles        *sprites.ParticleSystem
 	Audio            *audio.SoundManager
@@ -91,7 +91,7 @@ func NewGame(width, height int32) *Game {
 		ScrollSpeed:      BaseScrollSpeed,
 		World:            NewProceduralWorld(w, h, seed),
 		Player:           sprites.NewPlayerJet(rl.Vector2{X: w / 2, Y: h * 0.75}),
-		Bullets:          make([]*sprites.Bullet, 0, 64),
+		Bullets:          make([]sprites.Sprite, 0, 64),
 		Missiles:         make([]sprites.Sprite, 0, 16),
 		Particles:        sprites.NewParticleSystem(),
 		Audio:            audio.NewSoundManager(),
