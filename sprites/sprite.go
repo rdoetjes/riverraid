@@ -17,7 +17,9 @@ const (
 	TypeBridge
 	TypeSAMSite
 	TypeMissile
+	TypeSubMissile
 	TypeBullet
+	TypeSubmarine
 	TypeParticle
 	TypeDecoration
 )

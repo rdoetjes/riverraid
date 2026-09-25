@@ -53,7 +53,7 @@ type Game struct {
 	World            *ProceduralWorld
 	Player           *sprites.PlayerJet
 	Bullets          []*sprites.Bullet
-	Missiles         []*sprites.Missile
+	Missiles         []sprites.Sprite
 	Particles        *sprites.ParticleSystem
 	Audio            *audio.SoundManager
 	HUD              *ui.HUD
@@ -92,7 +92,7 @@ func NewGame(width, height int32) *Game {
 		World:            NewProceduralWorld(w, h, seed),
 		Player:           sprites.NewPlayerJet(rl.Vector2{X: w / 2, Y: h * 0.75}),
 		Bullets:          make([]*sprites.Bullet, 0, 64),
-		Missiles:         make([]*sprites.Missile, 0, 16),
+		Missiles:         make([]sprites.Sprite, 0, 16),
 		Particles:        sprites.NewParticleSystem(),
 		Audio:            audio.NewSoundManager(),
 		Textures:         make(map[string]rl.Texture2D),
@@ -161,7 +161,7 @@ func (g *Game) AddHighScore(name string, score int) {
 }
 
 func (g *Game) loadAllTextures() {
-	names := []string{"logo", "player", "helicopter", "ship", "destroyer", "enemy_jet", "fuel", "sam_site", "missile", "bridge", "deco_pine", "deco_bush", "deco_house", "deco_building", "deco_rock"}
+	names := []string{"logo", "player", "helicopter", "ship", "destroyer", "enemy_jet", "submarine", "fuel", "sam_site", "missile", "bridge", "deco_pine", "deco_bush", "deco_house", "deco_building", "deco_rock"}
 	for _, name := range names {
 		path := "assets/sprites/" + name + ".png"
 		if _, err := os.Stat(path); err == nil {

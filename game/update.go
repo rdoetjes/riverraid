@@ -237,6 +237,18 @@ func (g *Game) updateEnemies(dt float32) {
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
 		case *sprites.Helicopter:
 			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
+		case *sprites.Submarine:
+			e.UpdateWithRiverBounds(dt, leftBank, rightBank, hasIsland, islLeft, islRight)
+			// Submarine Firing Logic: Surfaced + Player within 25% height radius
+			if e.State == sprites.SubStateSurfaced && e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
+				distY := math.Abs(float64(e.Position.Y - g.Player.Position.Y))
+				if distY < float64(g.ScreenHeight*0.25) {
+					missile := sprites.NewSubMissile(e.Position, g.Player)
+					g.Missiles = append(g.Missiles, missile)
+					e.FireCooldown = 3.0 // Cooldown for firing
+					g.Audio.Play(audio.SoundShoot)
+				}
+			}
 		case *sprites.Destroyer:
 			// Find the nearest undestroyed bridge "behind" the destroyer (the one it would hit if it sailed down-river)
 			// Bridges are at -3600, -7200, etc. Destroyer sails towards more positive Y.
@@ -297,7 +309,8 @@ func (g *Game) updateMissiles(dt float32) {
 		m.Update(dt)
 
 		// Cull if too far off screen
-		if m.Position.Y < g.CameraY-200 || m.Position.Y > g.CameraY+g.ScreenHeight+200 {
+		pos := m.GetPosition()
+		if pos.Y < g.CameraY-200 || pos.Y > g.ScreenHeight+g.CameraY+200 {
 			m.SetActive(false)
 			continue
 		}
@@ -380,6 +393,13 @@ func (g *Game) checkPlayerBulletVsEnemies(bullet *sprites.Bullet, bulletBounds r
 		if !enemy.IsActive() {
 			continue
 		}
+		// Submarines only collide when surfaced or surfacing
+		if sub, ok := enemy.(*sprites.Submarine); ok {
+			if sub.State == sprites.SubStateSubmerged {
+				continue
+			}
+		}
+
 		if rl.CheckCollisionRecs(bulletBounds, enemy.GetBounds()) {
 			bullet.SetActive(false)
 			enemy.SetActive(false)
@@ -397,6 +417,8 @@ func (g *Game) checkPlayerBulletVsEnemies(bullet *sprites.Bullet, bulletBounds r
 			case *sprites.FuelDepot:
 				pts = e.ScoreValue
 			case *sprites.SAMSite:
+				pts = e.ScoreValue
+			case *sprites.Submarine:
 				pts = e.ScoreValue
 			}
 
@@ -509,6 +531,13 @@ func (g *Game) checkEnemyCrashCollisions(playerHitbox rl.Rectangle) {
 		enemyPos := enemy.GetPosition()
 		if math.Abs(float64(enemyPos.Y-g.Player.Position.Y)) > 60 {
 			continue
+		}
+
+		// Submarines only collide when surfaced or surfacing
+		if sub, ok := enemy.(*sprites.Submarine); ok {
+			if sub.State == sprites.SubStateSubmerged {
+				continue
+			}
 		}
 
 		if rl.CheckCollisionRecs(playerHitbox, enemy.GetBounds()) {

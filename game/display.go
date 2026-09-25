@@ -288,6 +288,8 @@ func (g *Game) drawEnemies(sx, sy float32) {
 			texName = "fuel"
 		case *sprites.SAMSite:
 			texName = "sam_site"
+		case *sprites.Submarine:
+			texName = "submarine"
 		}
 
 		if tex, ok := g.Textures[texName]; ok {
@@ -335,22 +337,21 @@ func (g *Game) drawBullets(sx, sy float32) {
 	}
 }
 
-// drawMissiles renders SAM missiles.
+// drawMissiles renders SAM missiles and Submarine missiles.
 func (g *Game) drawMissiles(sx, sy float32) {
 	if tex, ok := g.Textures["missile"]; ok {
 		for _, m := range g.Missiles {
 			if !m.IsActive() {
 				continue
 			}
-			origPos := m.Position
+			origPos := m.GetPosition()
 			screenY := origPos.Y - g.CameraY + sy
 			if screenY < -50 || screenY > g.ScreenHeight+50 {
 				continue
 			}
-			m.Position.X = origPos.X + sx
-			m.Position.Y = screenY
+			m.SetPosition(rl.Vector2{X: origPos.X + sx, Y: screenY})
 			m.Draw(tex)
-			m.Position = origPos
+			m.SetPosition(origPos)
 		}
 	}
 }

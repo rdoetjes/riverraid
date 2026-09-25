@@ -31,33 +31,35 @@ type RiverSlice struct {
 
 // ProceduralWorld manages dynamic river generation, island meshes, scenery, and enemy spawning.
 type ProceduralWorld struct {
-	Seed           int64
-	ScreenWidth    float32
-	ScreenHeight   float32
-	ActiveSlices   []RiverSlice
-	Decorations    []*sprites.TerrainDecoration
-	Enemies        []sprites.Sprite
-	Bridges        []*sprites.Bridge
-	HighestGenY    float32 // Furthest forward Y generated (most negative)
-	LowestGenY     float32 // Furthest back Y kept in memory
-	NextBridgeY    float32
-	CurrentSection int
+	Seed                int64
+	ScreenWidth         float32
+	ScreenHeight        float32
+	ActiveSlices        []RiverSlice
+	Decorations         []*sprites.TerrainDecoration
+	Enemies             []sprites.Sprite
+	Bridges             []*sprites.Bridge
+	HighestGenY         float32 // Furthest forward Y generated (most negative)
+	LowestGenY          float32 // Furthest back Y kept in memory
+	NextBridgeY         float32
+	CurrentSection      int
+	SubmarinesInSection int
 }
 
 // NewProceduralWorld initializes world generation starting from world origin.
 func NewProceduralWorld(screenWidth, screenHeight float32, seed int64) *ProceduralWorld {
 	pw := &ProceduralWorld{
-		Seed:           seed,
-		ScreenWidth:    screenWidth,
-		ScreenHeight:   screenHeight,
-		ActiveSlices:   make([]RiverSlice, 0, 512),
-		Decorations:    make([]*sprites.TerrainDecoration, 0, 256),
-		Enemies:        make([]sprites.Sprite, 0, 128),
-		Bridges:        make([]*sprites.Bridge, 0, 16),
-		HighestGenY:    1000.0,
-		LowestGenY:     1000.0,
-		NextBridgeY:    -SectionLength,
-		CurrentSection: 1,
+		Seed:                seed,
+		ScreenWidth:         screenWidth,
+		ScreenHeight:        screenHeight,
+		ActiveSlices:        make([]RiverSlice, 0, 512),
+		Decorations:         make([]*sprites.TerrainDecoration, 0, 256),
+		Enemies:             make([]sprites.Sprite, 0, 128),
+		Bridges:             make([]*sprites.Bridge, 0, 16),
+		HighestGenY:         1000.0,
+		LowestGenY:          1000.0,
+		NextBridgeY:         -SectionLength,
+		CurrentSection:      1,
+		SubmarinesInSection: 0,
 	}
 
 	// Pre-generate initial river chunks from Y = 1000 down to -screenHeight*2.5
@@ -169,6 +171,7 @@ func (pw *ProceduralWorld) GenerateAhead(targetY float32) {
 			pw.Bridges = append(pw.Bridges, bridge)
 			pw.CurrentSection++
 			pw.NextBridgeY -= SectionLength
+			pw.SubmarinesInSection = 0 // Reset submarine count for the new section
 		}
 
 		// Procedural entity spawning
@@ -216,8 +219,8 @@ func (pw *ProceduralWorld) spawnBankDecorations(slice RiverSlice, rng *rand.Rand
 func (pw *ProceduralWorld) createDecorationOrSAM(x, y float32, rng *rand.Rand, section int) {
 	roll := rng.Float64()
 
-	// Special case: SAM Sites spawn from Section 5 onwards
-	if roll < 0.03 && section >= 5 {
+	// Special case: SAM Sites spawn from Section 6 onwards
+	if roll < 0.03 && section >= 6 {
 		pw.Enemies = append(pw.Enemies, sprites.NewSAMSite(rl.Vector2{X: x, Y: y}))
 		return
 	}
@@ -286,6 +289,8 @@ func (pw *ProceduralWorld) spawnActiveEntities(slice RiverSlice, rng *rand.Rand,
 		pw.spawnHelicopter(slice, rng, section)
 	} else if spawnRoll < 0.70 {
 		pw.spawnShipOrDestroyer(slice, rng, section)
+	} else if spawnRoll < 0.85 {
+		pw.spawnSubmarine(slice, rng, section)
 	} else {
 		pw.spawnEnemyJet(slice, rng, section)
 	}
@@ -330,6 +335,20 @@ func (pw *ProceduralWorld) spawnShipOrDestroyer(slice RiverSlice, rng *rand.Rand
 			speed := float32(25.0 + rng.Float64()*30.0)
 			pw.Enemies = append(pw.Enemies, sprites.NewShip(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
 		}
+	}
+}
+
+func (pw *ProceduralWorld) spawnSubmarine(slice RiverSlice, rng *rand.Rand, section int) {
+	if section < 5 || pw.SubmarinesInSection >= 2 {
+		return
+	}
+
+	minX, maxX := pw.getChannelBounds(slice, rng, 24, 20)
+	if maxX > minX+40 {
+		posX := minX + rng.Float32()*(maxX-minX)
+		speed := float32(30.0 + rng.Float64()*40.0)
+		pw.Enemies = append(pw.Enemies, sprites.NewSubmarine(rl.Vector2{X: posX, Y: slice.WorldY}, minX, maxX, speed))
+		pw.SubmarinesInSection++
 	}
 }
 
