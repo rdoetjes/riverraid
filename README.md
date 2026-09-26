@@ -9,7 +9,6 @@ Featuring procedural river generation, dynamic embankments and islands, 21st-cen
 ## 🎮 Features
 
 - **Procedural River & Embankments:** Infinite curving river system with varied widths, narrow gorges, branching split channels with islands, and beach shorelines.
-- **21st-Century Vector Graphics:**
   - **Stealth Fighter Jet:** F-22 inspired airframe with animated bank roll tilting, twin afterburner flame particles, drop shadows, and wingtip contrails.
   - **AH-64 Attack Helicopters:** Side-patrolling combat choppers with spinning rotor motion blur discs, tail rotors, and weapon pylons.
   - **Stealth Destroyers / Ships:** Modern warship hulls in neutral grey with rotating radar masts, gun turrets, and water wake foam trails.
@@ -17,7 +16,8 @@ Featuring procedural river generation, dynamic embankments and islands, 21st-cen
   - **Interceptor Jets:** High-speed Army Green delta-wing enemy jets streaking across the airspace.
   - **Offshore Fuel Depots:** Floating fuel platforms with storage tanks, safety hazard stripes, illuminated "FUEL" signage, and beacon lights.
   - **SAM Missile Sites:** Shore-based radar-guided missile batteries (encountered from Zone 05 onwards) that detect the player and launch persistent heat-seeking missiles.
-  - **River Bridges:** Multi-lane truss bridges spanning the river with road markings, crossing military vehicles that engage the player (from Zone 03 onwards), and multi-stage collapse animations when destroyed.
+- **Attack Submarines:** Naval units (encountered from Zone 05 onwards) that cycle between submerged and surfaced states. They fire missiles when surfaced.
+- **River Bridges:** Multi-lane truss bridges spanning the river with road markings, crossing military vehicles that engage the player (from Zone 03 onwards), and multi-stage collapse animations when destroyed.
   - **Dynamic Scenery:** Top-down vector-rendered pine/deciduous trees, coastal rocks, radar stations, military bunkers, suburban houses, and industrial buildings populating the embankments.
   - **Particle FX:** Explosive fire bursts, shockwaves, smoke plumes, water splash rings, and flying metal debris.
 - **Tactical Flight HUD:** Futuristic cockpit instruments including dynamic fuel gauge with low-fuel alarms, digital score readout, reserve lives, sector indicators, and tactical popups.
@@ -37,6 +37,23 @@ Featuring procedural river generation, dynamic embankments and islands, 21st-cen
 | `P` / `Escape` | Pause / Resume |
 | `M` | Mute / Unmute Audio |
 | `Enter` / `Space` | Launch Sortie / Restart Mission |
+
+---
+
+## 📖 Player Instructions: Reconnaissance Report
+
+Identify your targets and manage your resources to survive the deep river incursions.
+
+| Sprite | Name | Intelligence / Behavior |
+| :---: | :--- | :--- |
+| ![Helicopter](assets/sprites/helicopter.png) | **AH-64 Attack Helicopter** | Side-patrolling combat choppers with spinning rotors. Found in all zones. |
+| ![Ship](assets/sprites/ship.png) | **Naval Destroyer** | Standard naval unit patrolling the river. |
+| ![Stealth Destroyer](assets/sprites/destroyer.png) | **Stealth Destroyer** | Advanced warship with rotating radar. From Zone 04+, they laterally pursue the player and engage with precision turret fire. |
+| ![Interceptor Jet](assets/sprites/enemy_jet.png) | **Interceptor Jet** | High-speed delta-wing jets that streak across the airspace at extreme velocity. |
+| ![SAM Site](assets/sprites/sam_site.png) | **SAM Missile Site** | Shore-based radar-guided missile batteries (Zone 05+). Launches persistent heat-seeking missiles when the player is detected. |
+| ![Submarine](assets/sprites/submarine.png) | **Attack Submarine** | Cycles between submerged (invulnerable) and surfaced (vulnerable). Fires missiles when surfaced (Zone 05+). |
+| ![Bridge](assets/sprites/bridge.png) | **River Bridge** | Critical milestone targets. From Zone 03+, crossing vehicles engage the player. Destroying a bridge marks a sector checkpoint. |
+| ![Fuel Depot](assets/sprites/fuel.png) | **Fuel Depot** | Refuels your jet when flying over it. Decelerating increases the fuel intake rate. Can be destroyed for bonus points if fuel is not needed. |
 
 ---
 
@@ -155,6 +172,7 @@ A `Makefile` is included to streamline building, running, testing, formatting, a
 | `make deps` | Download and verify module dependencies. | `go mod download && go mod verify` |
 | `make tidy` | Tidy dependencies in `go.mod` and `go.sum`. | `go mod tidy` |
 | `make package-mac` | Build a standalone macOS `.app` bundle (`dist/RiverRaid.app`). | Builds binary and bundles `Info.plist` + assets |
+| `make dist` | Build and package for all platforms (macOS, Linux, Windows). | Cross-compiles binaries and creates archives in `dist/` |
 | `make help` | Print a formatted summary of all available make recipes. | Prints target list with descriptions |
 
 ---
