@@ -2,7 +2,7 @@
 
 A modern remake of Activision's classic **River Raid**, built with **Go** and **RayLib** (`raylib-go`).
 
-Featuring procedural river generation, dynamic embankments and islands, 21st-century vector-rendered military graphics, particle effects, multi-stage bridge destruction, tactical fighter HUD, and built-in procedural audio synthesis with sound asset placeholder overrides.
+Featuring procedural river generation, dynamic embankments and islands, 21st-century military graphics, particle effects, multi-stage bridge destruction, tactical fighter HUD, and built-in procedural audio synthesis with sound asset placeholder overrides.
 
 ---
 
@@ -52,7 +52,7 @@ Identify your targets and manage your resources to survive the deep river incurs
 | ![Interceptor Jet](assets/sprites/enemy_jet.png) | **Interceptor Jet** | High-speed delta-wing jets that streak across the airspace at extreme velocity. |
 | ![SAM Site](assets/sprites/sam_site.png) | **SAM Missile Site** | Shore-based radar-guided missile batteries (Zone 05+). Launches persistent heat-seeking missiles when the player is detected. |
 | ![Submarine](assets/sprites/submarine.png) | **Attack Submarine** | Cycles between submerged (invulnerable) and surfaced (vulnerable). Fires missiles when surfaced (Zone 05+). |
-| ![Bridge](assets/sprites/bridge.png) | **River Bridge** | Critical milestone targets. From Zone 03+, crossing vehicles engage the player. Destroying a bridge marks a sector checkpoint. |
+| ![Bridge](assets/sprites/bridge.png) | **River Bridge** | Critical milestone targets. From Zone 03+, crossing vehicles engage the player. Destroying a bridge marks a sector checkpoint. It takes 5 shots to break a bridge! |
 | ![Fuel Depot](assets/sprites/fuel.png) | **Fuel Depot** | Refuels your jet when flying over it. Decelerating increases the fuel intake rate. Can be destroyed for bonus points if fuel is not needed. |
 
 ---
