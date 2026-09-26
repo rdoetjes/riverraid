@@ -4,6 +4,7 @@ A modern remake of Activision's classic **River Raid**, built with **Go** and **
 
 Featuring procedural river generation, dynamic embankments and islands, 21st-century military graphics, particle effects, multi-stage bridge destruction, tactical fighter HUD, and built-in procedural audio synthesis with sound asset placeholder overrides.
 
+“All rights reserved. This application is provided free of charge for personal use. Commercial use is strictly prohibited without prior written consent from the developer.”
 ---
 
 ## 🎮 Features
