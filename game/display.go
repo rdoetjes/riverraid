@@ -218,7 +218,11 @@ func (g *Game) drawRiverAndTerrain(sx, sy float32) {
 }
 
 func (g *Game) drawDecorations(sx, sy float32) {
-	for _, deco := range g.World.Decorations {
+	for _, s := range g.World.Decorations {
+		deco, ok := s.(*sprites.TerrainDecoration)
+		if !ok {
+			continue
+		}
 		origPos := deco.Position
 		screenY := origPos.Y - g.CameraY + sy
 		if screenY < -30 || screenY > g.ScreenHeight+30 {
@@ -248,7 +252,11 @@ func (g *Game) drawDecorations(sx, sy float32) {
 // drawBridges renders river bridges.
 func (g *Game) drawBridges(sx, sy float32) {
 	tex := g.Textures["bridge"]
-	for _, bridge := range g.World.Bridges {
+	for _, s := range g.World.Bridges {
+		bridge, ok := s.(*sprites.Bridge)
+		if !ok {
+			continue
+		}
 		origPos := bridge.Position
 		screenY := origPos.Y - g.CameraY + sy
 		if screenY < -60 || screenY > g.ScreenHeight+60 {

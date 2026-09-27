@@ -150,9 +150,11 @@ func (g *Game) updateWorldGeneration(dt float32) {
 	}
 
 	// Update active bridges
-	for _, bridge := range g.World.Bridges {
-		bridge.Update(dt)
-		g.updateBridgeCombat(bridge, dt)
+	for _, s := range g.World.Bridges {
+		s.Update(dt)
+		if bridge, ok := s.(*sprites.Bridge); ok {
+			g.updateBridgeCombat(bridge, dt)
+		}
 	}
 }
 
@@ -253,10 +255,12 @@ func (g *Game) updateEnemies(dt float32) {
 			// Find the nearest undestroyed bridge "behind" the destroyer (the one it would hit if it sailed down-river)
 			// Bridges are at -3600, -7200, etc. Destroyer sails towards more positive Y.
 			limitY := float32(2000.0) // Default limit well behind the start
-			for _, b := range g.World.Bridges {
-				// Only undestroyed bridges act as physical barriers
-				if !b.Destroyed && b.Position.Y > e.Position.Y && b.Position.Y < limitY {
-					limitY = b.Position.Y
+			for _, s := range g.World.Bridges {
+				if b, ok := s.(*sprites.Bridge); ok {
+					// Only undestroyed bridges act as physical barriers
+					if !b.Destroyed && b.Position.Y > e.Position.Y && b.Position.Y < limitY {
+						limitY = b.Position.Y
+					}
 				}
 			}
 			e.UpdateWithHunterLogic(dt, g.Player.Position, leftBank, rightBank, hasIsland, islLeft, islRight, limitY)
@@ -379,7 +383,7 @@ func (g *Game) checkBulletCollisions(playerHitbox rl.Rectangle) {
 		}
 
 		// 3. Bullet vs Bridges
-		g.checkBulletVsBridges(bullet, bulletBounds)
+		g.checkPlayerBulletVsBridges(bullet, bulletBounds)
 
 		if !bullet.IsActive() {
 			continue
@@ -457,14 +461,15 @@ func (g *Game) checkBulletVsMissiles(bullet *sprites.Bullet, bulletBounds rl.Rec
 	}
 }
 
-func (g *Game) checkBulletVsBridges(bullet *sprites.Bullet, bulletBounds rl.Rectangle) {
+func (g *Game) checkPlayerBulletVsBridges(bullet *sprites.Bullet, bulletBounds rl.Rectangle) {
 	// Only player bullets can destroy bridges
 	if !bullet.IsPlayerBullet {
 		return
 	}
 
-	for _, bridge := range g.World.Bridges {
-		if !bridge.IsActive() || bridge.Destroyed {
+	for _, s := range g.World.Bridges {
+		bridge, ok := s.(*sprites.Bridge)
+		if !ok || !bridge.IsActive() || bridge.Destroyed {
 			continue
 		}
 
@@ -573,8 +578,9 @@ func (g *Game) checkMissileCrashCollisions(playerHitbox rl.Rectangle) {
 
 // checkBridgeCrashCollisions handles impacts with undestroyed infrastructure.
 func (g *Game) checkBridgeCrashCollisions(playerHitbox rl.Rectangle) {
-	for _, bridge := range g.World.Bridges {
-		if !bridge.IsActive() || bridge.Destroyed {
+	for _, s := range g.World.Bridges {
+		bridge, ok := s.(*sprites.Bridge)
+		if !ok || !bridge.IsActive() || bridge.Destroyed {
 			continue
 		}
 		if math.Abs(float64(bridge.Position.Y-g.Player.Position.Y)) > 35 {

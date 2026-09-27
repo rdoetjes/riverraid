@@ -35,9 +35,9 @@ type ProceduralWorld struct {
 	ScreenWidth          float32
 	ScreenHeight         float32
 	ActiveSlices         []RiverSlice
-	Decorations          []*sprites.TerrainDecoration
+	Decorations          []sprites.Sprite
 	Enemies              []sprites.Sprite
-	Bridges              []*sprites.Bridge
+	Bridges              []sprites.Sprite
 	HighestGenY          float32 // Furthest forward Y generated (most negative)
 	LowestGenY           float32 // Furthest back Y kept in memory
 	NextBridgeY          float32
@@ -53,9 +53,9 @@ func NewProceduralWorld(screenWidth, screenHeight float32, seed int64) *Procedur
 		ScreenWidth:          screenWidth,
 		ScreenHeight:         screenHeight,
 		ActiveSlices:         make([]RiverSlice, 0, 512),
-		Decorations:          make([]*sprites.TerrainDecoration, 0, 256),
+		Decorations:          make([]sprites.Sprite, 0, 256),
 		Enemies:              make([]sprites.Sprite, 0, 128),
-		Bridges:              make([]*sprites.Bridge, 0, 16),
+		Bridges:              make([]sprites.Sprite, 0, 16),
 		HighestGenY:          1000.0,
 		LowestGenY:           1000.0,
 		NextBridgeY:          -SectionLength,
@@ -395,7 +395,7 @@ func (pw *ProceduralWorld) CleanupBehind(camBottomY float32) {
 	decoCount := 0
 	for i := 0; i < len(pw.Decorations); i++ {
 		d := pw.Decorations[i]
-		if d.Position.Y <= threshold {
+		if d.GetPosition().Y <= threshold {
 			pw.Decorations[decoCount] = d
 			decoCount++
 		}
@@ -417,7 +417,7 @@ func (pw *ProceduralWorld) CleanupBehind(camBottomY float32) {
 	bridgeCount := 0
 	for i := 0; i < len(pw.Bridges); i++ {
 		b := pw.Bridges[i]
-		if b.Position.Y <= threshold {
+		if b.GetPosition().Y <= threshold {
 			pw.Bridges[bridgeCount] = b
 			bridgeCount++
 		}
