@@ -31,35 +31,37 @@ type RiverSlice struct {
 
 // ProceduralWorld manages dynamic river generation, island meshes, scenery, and enemy spawning.
 type ProceduralWorld struct {
-	Seed                int64
-	ScreenWidth         float32
-	ScreenHeight        float32
-	ActiveSlices        []RiverSlice
-	Decorations         []*sprites.TerrainDecoration
-	Enemies             []sprites.Sprite
-	Bridges             []*sprites.Bridge
-	HighestGenY         float32 // Furthest forward Y generated (most negative)
-	LowestGenY          float32 // Furthest back Y kept in memory
-	NextBridgeY         float32
-	CurrentSection      int
-	SubmarinesInSection int
+	Seed                 int64
+	ScreenWidth          float32
+	ScreenHeight         float32
+	ActiveSlices         []RiverSlice
+	Decorations          []*sprites.TerrainDecoration
+	Enemies              []sprites.Sprite
+	Bridges              []*sprites.Bridge
+	HighestGenY          float32 // Furthest forward Y generated (most negative)
+	LowestGenY           float32 // Furthest back Y kept in memory
+	NextBridgeY          float32
+	CurrentSection       int
+	SubmarinesInSection  int
+	SAMMissilesInSection int
 }
 
 // NewProceduralWorld initializes world generation starting from world origin.
 func NewProceduralWorld(screenWidth, screenHeight float32, seed int64) *ProceduralWorld {
 	pw := &ProceduralWorld{
-		Seed:                seed,
-		ScreenWidth:         screenWidth,
-		ScreenHeight:        screenHeight,
-		ActiveSlices:        make([]RiverSlice, 0, 512),
-		Decorations:         make([]*sprites.TerrainDecoration, 0, 256),
-		Enemies:             make([]sprites.Sprite, 0, 128),
-		Bridges:             make([]*sprites.Bridge, 0, 16),
-		HighestGenY:         1000.0,
-		LowestGenY:          1000.0,
-		NextBridgeY:         -SectionLength,
-		CurrentSection:      1,
-		SubmarinesInSection: 0,
+		Seed:                 seed,
+		ScreenWidth:          screenWidth,
+		ScreenHeight:         screenHeight,
+		ActiveSlices:         make([]RiverSlice, 0, 512),
+		Decorations:          make([]*sprites.TerrainDecoration, 0, 256),
+		Enemies:              make([]sprites.Sprite, 0, 128),
+		Bridges:              make([]*sprites.Bridge, 0, 16),
+		HighestGenY:          1000.0,
+		LowestGenY:           1000.0,
+		NextBridgeY:          -SectionLength,
+		CurrentSection:       1,
+		SubmarinesInSection:  0,
+		SAMMissilesInSection: 0,
 	}
 
 	// Pre-generate initial river chunks from Y = 1000 down to -screenHeight*2.5
@@ -171,7 +173,8 @@ func (pw *ProceduralWorld) GenerateAhead(targetY float32) {
 			pw.Bridges = append(pw.Bridges, bridge)
 			pw.CurrentSection++
 			pw.NextBridgeY -= SectionLength
-			pw.SubmarinesInSection = 0 // Reset submarine count for the new section
+			pw.SubmarinesInSection = 0  // Reset submarine count for the new section
+			pw.SAMMissilesInSection = 0 // Reset SAM missile count for the new section
 		}
 
 		// Procedural entity spawning
@@ -502,6 +505,7 @@ func (pw *ProceduralWorld) Reset(seed int64) {
 	pw.LowestGenY = 1000.0
 	pw.NextBridgeY = -SectionLength
 	pw.CurrentSection = 1
+	pw.SAMMissilesInSection = 0
 
 	pw.GenerateAhead(-pw.ScreenHeight * 2.5)
 }

@@ -280,14 +280,15 @@ func (g *Game) updateEnemies(dt float32) {
 			}
 		case *sprites.SAMSite:
 			e.Update(dt)
-			// SAM Site Firing Logic
-			if e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
+			// SAM Site Firing Logic: Limit to 2 per section
+			if g.World.SAMMissilesInSection < 2 && e.FireCooldown <= 0 && g.Player.Active && g.Player.InvincibleTimer <= 0 {
 				dist := rl.Vector2Distance(e.Position, g.Player.Position)
 				horizontalDist := math.Abs(float64(e.Position.X - g.Player.Position.X))
 
 				if dist < e.DetectionRange && horizontalDist < float64(g.ScreenWidth*0.25) {
 					missile := sprites.NewMissile(e.Position, g.Player)
 					g.Missiles = append(g.Missiles, missile)
+					g.World.SAMMissilesInSection++
 					e.FireCooldown = 4.0
 					g.Audio.Play(audio.SoundShoot)
 				}
