@@ -31,6 +31,7 @@ func main() {
 	rl.InitWindow(game.DefaultScreenWidth, game.DefaultScreenHeight, "River Raid - 21st Century Strike")
 	defer rl.CloseWindow()
 
+	rl.HideCursor()
 	rl.SetTargetFPS(60)
 
 	g := game.NewGame(game.DefaultScreenWidth, game.DefaultScreenHeight)
