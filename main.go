@@ -54,15 +54,12 @@ func main() {
 
 		g.Draw() // Renders into g.RenderTex
 
-		// Calculate scaling to fit screen while maintaining aspect ratio
-		sw := float32(rl.GetScreenWidth())
-		sh := float32(rl.GetScreenHeight())
-		scale := float32(math.Min(float64(sw/game.DefaultScreenWidth), float64(sh/game.DefaultScreenHeight)))
-
-		renderW := game.DefaultScreenWidth * scale
-		renderH := game.DefaultScreenHeight * scale
-		offsetX := (sw - renderW) / 2
-		offsetY := (sh - renderH) / 2
+		renderW, renderH, offsetX, offsetY := getRenderLayout(
+			float32(rl.GetScreenWidth()),
+			float32(rl.GetScreenHeight()),
+			game.DefaultScreenWidth,
+			game.DefaultScreenHeight,
+		)
 
 		// 1. Draw stylized bezel (glow/frame) around the game area
 		bezelMargin := float32(4.0)
@@ -83,4 +80,16 @@ func main() {
 
 		rl.EndDrawing()
 	}
+}
+
+// getRenderLayout calculates the dimensions and offsets required to fit the game content
+// within the current window while preserving the target aspect ratio.
+func getRenderLayout(sw, sh, targetW, targetH float32) (renderW, renderH, offsetX, offsetY float32) {
+	scale := float32(math.Min(float64(sw/targetW), float64(sh/targetH)))
+
+	renderW = targetW * scale
+	renderH = targetH * scale
+	offsetX = (sw - renderW) / 2
+	offsetY = (sh - renderH) / 2
+	return
 }
