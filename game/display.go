@@ -13,7 +13,7 @@ import (
 
 // Draw renders the procedural river world, entities, particle effects, and tactical HUD.
 func (g *Game) Draw() {
-	rl.BeginDrawing()
+	rl.BeginTextureMode(g.RenderTex)
 
 	// Clear background
 	rl.ClearBackground(rl.Color{R: 15, G: 65, B: 115, A: 255})
@@ -111,7 +111,7 @@ func (g *Game) Draw() {
 		g.Menu.DrawNameEntry(g.Player.Score, g.EnterNameBuffer)
 	}
 
-	rl.EndDrawing()
+	rl.EndTextureMode()
 }
 
 // drawRiverAndTerrain draws shoreline gradients, embankments, and islands.

@@ -23,12 +23,18 @@ func (g *Game) HandleInput(dt float32) {
 			g.StartNewGame()
 			g.Audio.Play(audio.SoundShoot)
 		}
+		if rl.IsKeyPressed(rl.KeyF) {
+			rl.ToggleFullscreen()
+		}
 
 	case StatePlaying:
 		g.handleFlightControls(dt)
 
 		if rl.IsKeyPressed(rl.KeyP) || rl.IsKeyPressed(rl.KeyEscape) {
 			g.State = StatePaused
+		}
+		if rl.IsKeyPressed(rl.KeyF) {
+			rl.ToggleFullscreen()
 		}
 
 	case StatePaused:

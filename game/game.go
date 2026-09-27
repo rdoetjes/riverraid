@@ -52,6 +52,7 @@ type Game struct {
 	ScreenShake      float32
 	World            *ProceduralWorld
 	Player           *sprites.PlayerJet
+	RenderTex        rl.RenderTexture2D
 	Bullets          []sprites.Sprite
 	Missiles         []sprites.Sprite
 	Particles        *sprites.ParticleSystem
@@ -91,6 +92,7 @@ func NewGame(width, height int32) *Game {
 		ScrollSpeed:      BaseScrollSpeed,
 		World:            NewProceduralWorld(w, h, seed),
 		Player:           sprites.NewPlayerJet(rl.Vector2{X: w / 2, Y: h * 0.75}),
+		RenderTex:        rl.LoadRenderTexture(int32(w), int32(h)),
 		Bullets:          make([]sprites.Sprite, 0, 64),
 		Missiles:         make([]sprites.Sprite, 0, 16),
 		Particles:        sprites.NewParticleSystem(),
@@ -259,5 +261,6 @@ func (g *Game) Close() {
 	if g.WaterShader.ID > 0 {
 		rl.UnloadShader(g.WaterShader)
 	}
+	rl.UnloadRenderTexture(g.RenderTex)
 	rl.UnloadFont(g.MainFont)
 }
