@@ -12,8 +12,7 @@ import (
 func main() {
 	// ... (working directory logic)
 	// Change working directory to the executable's directory to ensure assets are found
-	exePath, err := os.Executable()
-	if err == nil {
+	if exePath, err := os.Executable(); err == nil {
 		exeDir := filepath.Dir(exePath)
 
 		// If we are inside a macOS app bundle (Contents/MacOS), move up to Resources
